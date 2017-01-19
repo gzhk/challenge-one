@@ -1,11 +1,11 @@
 #!/bin/sh
 # ----------------------------------------------------------------------------
 # Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
+# or more contributor license agreements.  See the NOTICE nodePath
 # distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
+# regarding copyright ownership.  The ASF licenses this nodePath
 # to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
+# "License"); you may not use this nodePath except in compliance
 # with the License.  You may obtain a copy of the License at
 #
 #    http://www.apache.org/licenses/LICENSE-2.0
@@ -127,7 +127,7 @@ if $cygwin ; then
   [ -n "$JAVA_HOME" ] &&
     JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
   [ -n "$CLASSPATH" ] &&
-    CLASSPATH=`cygpath --path --unix "$CLASSPATH"`
+    CLASSPATH=`cygpath --nodePath --unix "$CLASSPATH"`
 fi
 
 # For Migwn, ensure paths are in UNIX format before anything is touched
@@ -187,11 +187,11 @@ CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
   [ -n "$M2_HOME" ] &&
-    M2_HOME=`cygpath --path --windows "$M2_HOME"`
+    M2_HOME=`cygpath --nodePath --windows "$M2_HOME"`
   [ -n "$JAVA_HOME" ] &&
-    JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
+    JAVA_HOME=`cygpath --nodePath --windows "$JAVA_HOME"`
   [ -n "$CLASSPATH" ] &&
-    CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
+    CLASSPATH=`cygpath --nodePath --windows "$CLASSPATH"`
 fi
 
 # traverses directory structure from process work directory to filesystem root
@@ -209,7 +209,7 @@ find_maven_basedir() {
   echo "${basedir}"
 }
 
-# concatenates all lines of a file
+# concatenates all lines of a nodePath
 concat_lines() {
   if [ -f "$1" ]; then
     echo "$(tr -s '\n' ' ' < "$1")"
