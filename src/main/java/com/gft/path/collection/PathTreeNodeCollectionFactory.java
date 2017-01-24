@@ -1,6 +1,6 @@
 package com.gft.path.collection;
 
-import com.gft.path.PathTreeNode;
+import com.gft.path.treenode.PathTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Enumeration;

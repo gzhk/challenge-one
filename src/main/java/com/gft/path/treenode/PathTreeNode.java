@@ -1,4 +1,4 @@
-package com.gft.path;
+package com.gft.path.treenode;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -12,29 +12,37 @@ import java.util.List;
 public final class PathTreeNode implements TreeNode {
 
     private Path nodePath;
-    private TreeNode parent;
-    private final List<TreeNode> children;
+    private PathTreeNode parent;
+    private final List<PathTreeNode> children;
 
     public PathTreeNode(@NotNull Path nodePath) {
         this.nodePath = nodePath;
         this.children = new ArrayList<>();
     }
 
-    public PathTreeNode(@NotNull Path nodePath, @NotNull TreeNode parent) {
+    public PathTreeNode(@NotNull Path nodePath, @NotNull PathTreeNode parent) {
         this.nodePath = nodePath;
         this.parent = parent;
         this.children = new ArrayList<>();
     }
 
-    public PathTreeNode(@NotNull Path nodePath, @NotNull List<TreeNode> children) {
+    public PathTreeNode(@NotNull Path nodePath, @NotNull List<PathTreeNode> children) {
         this.nodePath = nodePath;
         this.children = children;
     }
 
-    public PathTreeNode(@NotNull Path nodePath, @NotNull TreeNode parent, @NotNull List<TreeNode> children) {
+    public PathTreeNode(@NotNull Path nodePath, @NotNull PathTreeNode parent, @NotNull List<PathTreeNode> children) {
         this.nodePath = nodePath;
         this.parent = parent;
         this.children = children;
+    }
+
+    public void addChild(@NotNull PathTreeNode child) {
+        this.children.add(child);
+    }
+
+    public void setParent(@NotNull PathTreeNode parent) {
+        this.parent = parent;
     }
 
     @Override
@@ -72,17 +80,25 @@ public final class PathTreeNode implements TreeNode {
         return Collections.enumeration(children);
     }
 
-    public Path path() {
+    public Path getPath() {
         return nodePath;
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof PathTreeNode && nodePath.equals(((PathTreeNode) o).nodePath);
+        return o instanceof PathTreeNode
+            && nodePath.equals(((PathTreeNode) o).nodePath)
+//            && children.equals(((PathTreeNode) o).children) // oops :)
+            && (parent == null || parent.equals(((PathTreeNode) o).parent));
     }
 
     @Override
     public int hashCode() {
         return nodePath.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return nodePath.toString();
     }
 }

@@ -1,9 +1,8 @@
 package com.gft.path.collection;
 
-import com.gft.path.PathTreeNode;
+import com.gft.path.treenode.PathTreeNode;
 import org.junit.Test;
 
-import javax.swing.tree.TreeNode;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +15,10 @@ public class PathTreeNodeCollectionFactoryTest {
 
     @Test
     public void createsCollectionFromPathTreeNode() throws Exception {
-        List<TreeNode> children = new ArrayList<>();
+        List<PathTreeNode> children = new ArrayList<>();
         PathTreeNode rootNode = new PathTreeNode(mock(Path.class), children);
 
-        List<TreeNode> firstChildChildren = new ArrayList<>();
+        List<PathTreeNode> firstChildChildren = new ArrayList<>();
         PathTreeNode firstChild = new PathTreeNode(mock(Path.class), rootNode, firstChildChildren);
         PathTreeNode firstChildOfFirstChild = new PathTreeNode(mock(Path.class), firstChild);
         firstChildChildren.add(firstChildOfFirstChild);

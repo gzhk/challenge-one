@@ -1,6 +1,6 @@
 package com.gft.path.collection;
 
-import com.gft.path.PathTreeNode;
+import com.gft.path.treenode.PathTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ final class PathTreeNodeIterator implements Iterator<PathTreeNode> {
         }
 
         PathTreeNode nextPath = next;
-        next = new PathTreeNode(pathForNextIteration(rootPath.path(), nextPath.path()));
+        next = new PathTreeNode(pathForNextIteration(rootPath.getPath(), nextPath.getPath()));
 
         return nextPath;
     }

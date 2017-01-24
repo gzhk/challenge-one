@@ -1,8 +1,8 @@
-package com.gft.path;
+package com.gft.path.treenode;
 
+import com.gft.path.treenode.PathTreeNode;
 import org.junit.Test;
 
-import javax.swing.tree.TreeNode;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class PathTreeNodeTest {
     @Test
     public void returnsFalseIfHaveChildren() throws Exception {
         PathTreeNode child = new PathTreeNode(mock(Path.class));
-        List<TreeNode> children = new ArrayList<>();
+        List<PathTreeNode> children = new ArrayList<>();
         children.add(child);
         PathTreeNode pathTreeNode = new PathTreeNode(mock(Path.class), children);
 
@@ -51,7 +51,7 @@ public class PathTreeNodeTest {
     @Test
     public void returnsChildByIndex() throws Exception {
         PathTreeNode child = new PathTreeNode(mock(Path.class));
-        List<TreeNode> children = new ArrayList<>();
+        List<PathTreeNode> children = new ArrayList<>();
         children.add(child);
         PathTreeNode pathTreeNode = new PathTreeNode(mock(Path.class), children);
 
@@ -61,7 +61,7 @@ public class PathTreeNodeTest {
     @Test
     public void returnsChildrenCount() throws Exception {
         PathTreeNode child = new PathTreeNode(mock(Path.class));
-        List<TreeNode> children = new ArrayList<>();
+        List<PathTreeNode> children = new ArrayList<>();
         children.add(child);
         PathTreeNode pathTreeNode = new PathTreeNode(mock(Path.class), children);
 
@@ -72,7 +72,7 @@ public class PathTreeNodeTest {
     public void returnsIndexOfGivenTreeNode() throws Exception {
         PathTreeNode firstChild = new PathTreeNode(mock(Path.class));
         PathTreeNode secondChild = new PathTreeNode(mock(Path.class));
-        List<TreeNode> children = new ArrayList<>();
+        List<PathTreeNode> children = new ArrayList<>();
         children.add(firstChild);
         children.add(secondChild);
         PathTreeNode pathTreeNode = new PathTreeNode(mock(Path.class), children);
@@ -109,7 +109,7 @@ public class PathTreeNodeTest {
     public void returnsEnumerationWithChildren() throws Exception {
         PathTreeNode firstChild = new PathTreeNode(mock(Path.class));
         PathTreeNode secondChild = new PathTreeNode(mock(Path.class));
-        List<TreeNode> children = new ArrayList<>();
+        List<PathTreeNode> children = new ArrayList<>();
         children.add(firstChild);
         children.add(secondChild);
         PathTreeNode pathTreeNode = new PathTreeNode(mock(Path.class), children);
@@ -123,7 +123,7 @@ public class PathTreeNodeTest {
     public void itCanHaveRootAndChildren() throws Exception {
         PathTreeNode root = new PathTreeNode(mock(Path.class));
         PathTreeNode firstChild = new PathTreeNode(mock(Path.class));
-        List<TreeNode> children = new ArrayList<>();
+        List<PathTreeNode> children = new ArrayList<>();
         children.add(firstChild);
         PathTreeNode pathTreeNode = new PathTreeNode(mock(Path.class), root, children);
 
@@ -136,7 +136,7 @@ public class PathTreeNodeTest {
         Path nodePath = mock(Path.class);
         PathTreeNode pathTreeNode = new PathTreeNode(nodePath);
 
-        assertThat(pathTreeNode.path(), is(nodePath));
+        assertThat(pathTreeNode.getPath(), is(nodePath));
     }
 
     @Test
@@ -154,5 +154,14 @@ public class PathTreeNodeTest {
         PathTreeNode equalPathTreeNode = new PathTreeNode(nodePath);
 
         assertTrue(pathTreeNode.equals(equalPathTreeNode));
+    }
+
+    @Test
+    public void passesResultFromPathToString() throws Exception {
+        Path nodePath = mock(Path.class);
+        when(nodePath.toString()).thenReturn("/path");
+
+        PathTreeNode pathTreeNode = new PathTreeNode(nodePath);
+        assertEquals(pathTreeNode.toString(), "/path");
     }
 }
