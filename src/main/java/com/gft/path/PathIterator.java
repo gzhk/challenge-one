@@ -1,7 +1,5 @@
 package com.gft.path;
 
-import com.gft.path.treenode.PathTreeNode;
-
 import java.util.Iterator;
 
 public class PathIterator implements Iterator<String> {

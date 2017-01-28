@@ -1,9 +1,9 @@
 package com.gft.application.config;
 
+import com.gft.path.collection.PathTreeNodeCollectionFactory;
+import com.gft.path.treenode.PathTreeNodeFactory;
 import com.gft.path.watcher.PathService;
 import com.gft.path.watcher.RecursivePathWatcher;
-import com.gft.path.treenode.PathTreeNodeFactory;
-import com.gft.path.collection.PathTreeNodeCollectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +30,8 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/websocket")
+        registry
+            .addEndpoint("/websocket")
             .setAllowedOrigins("*")
             .withSockJS();
     }

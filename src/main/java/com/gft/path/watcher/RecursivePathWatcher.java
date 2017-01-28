@@ -26,10 +26,9 @@ public final class RecursivePathWatcher {
     }
 
     public void start() throws IOException {
-        final Map<WatchKey, Path> keys = new ConcurrentHashMap<>();
         final Object lock = new Object();
-        pathService.registerPathInWatchService(path, watchService, keys);
-        executor.submit(new PollWatchServiceEvents(watchService, keys, pathQueue, pathService, lock));
+        pathService.registerPathInWatchService(path, watchService);
+        executor.submit(new PollWatchServiceEvents(watchService, pathQueue, pathService, lock));
     }
 
     public void close() throws IOException {

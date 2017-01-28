@@ -1,4 +1,4 @@
 language: java
 script:
-  - mnv test -B
+  - mvn test -B
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
