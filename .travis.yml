@@ -1,4 +1,4 @@
 language: java
 script:
-  - ./mvnw test -B
-  - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mnv test -B
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
