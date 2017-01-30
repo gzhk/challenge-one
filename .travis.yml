@@ -2,5 +2,6 @@ language: java
 jdk:
   - oraclejdk8
 script:
-  - mvn test -B
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn test -B
+  - mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken=ddb54cd10794447cacbedc9b6d547ee6 -DapiToken=uYoTzDvhpsaK3uG970Tg
