@@ -94,7 +94,7 @@ final class PathTreeNodeIterator implements Iterator<PathTreeNode> {
                 return FileVisitResult.TERMINATE;
             }
 
-            if (pathCandidate.equals(path) || path == rootPath) {
+            if (pathCandidate.equals(path) || path.equals(rootPath)) {
                 setupPathAsNext = true;
             }
 

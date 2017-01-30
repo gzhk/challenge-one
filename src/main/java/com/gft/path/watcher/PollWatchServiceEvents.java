@@ -1,40 +1,37 @@
 package com.gft.path.watcher;
 
+import com.gft.path.treenode.PathTreeNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.nio.file.*;
-import java.util.Map;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.BlockingQueue;
 
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 public final class PollWatchServiceEvents implements Runnable {
 
+    @NotNull
+    private final Path rootPath;
     private final WatchService watchService;
-    private final BlockingQueue<Path> paths;
-    private final PathService pathService;
-    private final Object lock;
+    private final BlockingQueue<PathTreeNode> pathQueue;
 
-    public PollWatchServiceEvents(
-        @NotNull WatchService watchService,
-        @NotNull BlockingQueue<Path> newPaths,
-        @NotNull PathService pathService,
-        @NotNull Object lock
-    ) {
+    public PollWatchServiceEvents(@NotNull Path rootPath, @NotNull WatchService watchService, @NotNull BlockingQueue<PathTreeNode> pathQueue) {
+        this.rootPath = rootPath;
         this.watchService = watchService;
-        this.paths = newPaths;
-        this.pathService = pathService;
-        this.lock = lock;
+        this.pathQueue = pathQueue;
     }
 
     @Override
     public void run() {
         while (true) {
+
             final WatchKey key;
 
             try {
                 key = watchService.take();
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException e) {
                 return;
             }
 
@@ -42,21 +39,34 @@ public final class PollWatchServiceEvents implements Runnable {
                 .stream()
                 .filter(e -> (e.kind() != OVERFLOW))
                 .map(e -> ((WatchEvent<Path>) e).context())
-                .forEach(p -> {
-                    final Path absPath = p.toAbsolutePath();
+                .forEach(path -> {
+                    try {
+                        Files.walkFileTree(rootPath.resolve(path), new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+                                registerPath(rootPath.resolve(dir));
 
-                    if (Files.isDirectory(absPath)) {
-                        synchronized (lock) {
-                            pathService.registerPathInWatchService(absPath, watchService);
-                        }
-                    } else {
-                        System.out.println("path: " + p);
-                        paths.add(p);
+                                return super.preVisitDirectory(dir, attrs);
+                            }
+
+                            @Override
+                            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                                registerPath(rootPath.resolve(file));
+
+                                return super.visitFile(file, attrs);
+                            }
+
+                            private void registerPath(Path path) {
+                                try {
+                                    pathQueue.put(new PathTreeNode(path, new PathTreeNode(path.getParent())));
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        });
+                    } catch (IOException e) {
+                        throw new RuntimeException(e.getMessage(), e);
                     }
-
-                    System.out.println("abs: " + absPath);
-
-                    paths.add(p);
                 });
 
             boolean valid = key.reset();

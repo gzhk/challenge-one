@@ -1,7 +1,5 @@
 package com.gft.path.treenode;
 
-import com.gft.path.treenode.PathTreeNode;
-import com.gft.path.treenode.PathTreeNodeFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;

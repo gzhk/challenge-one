@@ -1,6 +1,5 @@
 package com.gft.application.file.list;
 
-import com.gft.application.file.model.PathViewFactory;
 import com.gft.path.collection.PathTreeNodeCollection;
 import com.gft.path.collection.PathTreeNodeCollectionFactory;
 import com.gft.path.treenode.PathTreeNode;
@@ -29,6 +28,8 @@ public class ListServiceTest {
 
         ListService listService = new ListService(new PathTreeNodeFactory(), new PathTreeNodeCollectionFactory());
 
-        listService.createObservableForPath(rootPath).subscribe(pathTreeNode -> assertThat(pathTreeNode, is(new PathTreeNode(rootPath))));
+        listService.createObservableForPath(rootPath).subscribe(pathTreeNode -> {
+            assertThat(pathTreeNode, is(new PathTreeNode(rootPath)));
+        });
     }
 }

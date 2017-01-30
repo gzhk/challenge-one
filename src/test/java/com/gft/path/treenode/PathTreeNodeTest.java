@@ -1,6 +1,5 @@
 package com.gft.path.treenode;
 
-import com.gft.path.treenode.PathTreeNode;
 import org.junit.Test;
 
 import java.io.File;
