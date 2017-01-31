@@ -6,7 +6,6 @@ import com.gft.path.treenode.CouldNotCreatePathTreeNode;
 import com.gft.path.treenode.PathTreeNode;
 import com.gft.path.treenode.PathTreeNodeFactory;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Service;
 import rx.Observable;
 
 import java.nio.file.Path;

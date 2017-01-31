@@ -8,7 +8,6 @@ import com.gft.path.treenode.PathTreeNodeFactory;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.nio.file.FileSystem;
 import java.nio.file.Files;

@@ -1,6 +1,5 @@
 package com.gft.path.watcher;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -61,7 +60,7 @@ public class PathWatcherTest {
 
     @Test
     public void itIsAutoClosable() throws Exception {
-        assertThat(new PathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(CoreMatchers.instanceOf(AutoCloseable.class)));
+        assertThat(new PathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(AutoCloseable.class)));
     }
 
     @Test
@@ -77,7 +76,7 @@ public class PathWatcherTest {
 
     @Test
     public void itIsIterable() throws Exception {
-        assertThat(new PathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(CoreMatchers.instanceOf(Iterable.class)));
+        assertThat(new PathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(Iterable.class)));
     }
 
     @Test
