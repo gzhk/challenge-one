@@ -26,7 +26,6 @@ public final class PollWatchServiceEvents implements Runnable {
     @Override
     public void run() {
         while (true) {
-
             final WatchKey key;
 
             try {
@@ -41,29 +40,7 @@ public final class PollWatchServiceEvents implements Runnable {
                 .map(e -> ((WatchEvent<Path>) e).context())
                 .forEach(path -> {
                     try {
-                        Files.walkFileTree(rootPath.resolve(path), new SimpleFileVisitor<Path>() {
-                            @Override
-                            public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-                                registerPath(rootPath.resolve(dir));
-
-                                return super.preVisitDirectory(dir, attrs);
-                            }
-
-                            @Override
-                            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                                registerPath(rootPath.resolve(file));
-
-                                return super.visitFile(file, attrs);
-                            }
-
-                            private void registerPath(Path path) {
-                                try {
-                                    pathQueue.put(new PathTreeNode(path, new PathTreeNode(path.getParent())));
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        });
+                        Files.walkFileTree(rootPath.resolve(path), new RegisterPaths(rootPath, pathQueue));
                     } catch (IOException e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }
@@ -73,6 +50,43 @@ public final class PollWatchServiceEvents implements Runnable {
 
             if (!valid) {
                 break;
+            }
+        }
+    }
+
+    private static class RegisterPaths extends SimpleFileVisitor<Path> {
+
+        private final Path rootPath;
+        private final BlockingQueue<PathTreeNode> pathQueue;
+
+        RegisterPaths(@NotNull final Path rootPath, @NotNull final BlockingQueue<PathTreeNode> pathQueue) {
+            this.rootPath = rootPath;
+            this.pathQueue = pathQueue;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+            registerPath(rootPath.resolve(dir));
+
+            return super.preVisitDirectory(dir, attrs);
+        }
+
+        @Override
+        public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+            registerPath(rootPath.resolve(file));
+
+            return super.visitFile(file, attrs);
+        }
+
+        private void registerPath(Path path) {
+            try {
+                if (path.equals(rootPath)) {
+                    pathQueue.put(new PathTreeNode(path));
+                } else {
+                    pathQueue.put(new PathTreeNode(path, new PathTreeNode(path.getParent())));
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }

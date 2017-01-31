@@ -20,7 +20,7 @@ public final class AddFileAction {
     private final String directory;
 
     @Autowired
-    public AddFileAction(@Value("${dir}") String directory) {
+    public AddFileAction(@Value("${dir}") final String directory) {
         this.directory = directory;
     }
 

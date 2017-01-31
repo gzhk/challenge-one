@@ -24,4 +24,23 @@ public class PathViewFactoryTest {
 
         assertThat(pathViewFactory.createFromPathTreeNode(new PathTreeNode(path)), is(new PathView(md5Hash, "/tmp")));
     }
+
+    @Test
+    public void createPathViewWithParent() throws Exception {
+        Path path = mock(Path.class);
+        Path parentPath = mock(Path.class);
+
+        when(path.toString()).thenReturn("/tmp/sub_dir");
+        String md5Hash = DigestUtils.md5DigestAsHex(new ByteArrayInputStream("/tmp/sub_dir".getBytes()));
+
+        when(path.getParent()).thenReturn(parentPath);
+
+        when(parentPath.toString()).thenReturn("/tmp");
+        String parentMd5Hash = DigestUtils.md5DigestAsHex(new ByteArrayInputStream("/tmp".getBytes()));
+
+        PathViewFactory pathViewFactory = new PathViewFactory();
+        PathView expectedPathTreeNode = pathViewFactory.createFromPathTreeNode(new PathTreeNode(path, new PathTreeNode(parentPath)));
+
+        assertThat(expectedPathTreeNode, is(new PathView(md5Hash, parentMd5Hash, "/tmp/sub_dir")));
+    }
 }

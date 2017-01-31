@@ -8,8 +8,16 @@ import org.springframework.util.DigestUtils;
 public final class PathViewFactory {
 
     public PathView createFromPathTreeNode(PathTreeNode pathTreeNode) {
-        String path = pathTreeNode.getPath().toString();
+        String pathString = pathTreeNode.toString();
 
-        return new PathView(DigestUtils.md5DigestAsHex(path.getBytes()), path);
+        if (pathTreeNode.getParent() != null) {
+            return new PathView(
+                DigestUtils.md5DigestAsHex(pathString.getBytes()),
+                DigestUtils.md5DigestAsHex(pathTreeNode.getParent().toString().getBytes()),
+                pathString
+            );
+        }
+
+        return new PathView(DigestUtils.md5DigestAsHex(pathString.getBytes()), pathString);
     }
 }

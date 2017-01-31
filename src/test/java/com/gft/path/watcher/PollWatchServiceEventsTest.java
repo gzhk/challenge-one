@@ -6,10 +6,13 @@ import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
@@ -63,9 +66,9 @@ public class PollWatchServiceEventsTest {
         pollWatchServiceEvents.run();
 
         assertTrue(pathQueue.contains(new PathTreeNode(rootPath)));
-        assertTrue(pathQueue.contains(new PathTreeNode(directory)));
-        assertTrue(pathQueue.contains(new PathTreeNode(subDirectory)));
-        assertTrue(pathQueue.contains(new PathTreeNode(file)));
+        assertTrue(pathQueue.contains(new PathTreeNode(directory, new PathTreeNode(rootPath))));
+        assertTrue(pathQueue.contains(new PathTreeNode(subDirectory, new PathTreeNode(directory))));
+        assertTrue(pathQueue.contains(new PathTreeNode(file, new PathTreeNode(rootPath))));
     }
 
     @Test
@@ -100,5 +103,31 @@ public class PollWatchServiceEventsTest {
         PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(mock(Path.class), watchService, pathQueue);
         pollWatchServiceEvents.run();
         verify(secondWatchKey, never()).pollEvents();
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void wrapsIOExceptionInRuntimeException() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.windows());
+        Path rootPath = fileSystem.getPath("C:\\root");
+        Files.createDirectory(rootPath);
+
+        Path directory = rootPath.resolve("directory");
+        Files.createDirectory(directory);
+
+        BlockingQueue<PathTreeNode> pathQueue = mock(BlockingQueue.class);
+        doThrow(InterruptedException.class).when(pathQueue).put(any());
+        WatchService watchService = mock(WatchService.class);
+
+        WatchKey watchKey = mock(WatchKey.class);
+        when(watchService.take()).thenReturn(watchKey);
+
+        WatchEvent watchEvent = mock(WatchEvent.class);
+        when(watchKey.pollEvents()).thenReturn(Collections.singletonList(watchEvent));
+
+        when(watchEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
+        when(watchEvent.context()).thenReturn(rootPath);
+
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(rootPath, watchService, pathQueue);
+        pollWatchServiceEvents.run();
     }
 }

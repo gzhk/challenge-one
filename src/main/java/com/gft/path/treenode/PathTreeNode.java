@@ -88,8 +88,7 @@ public final class PathTreeNode implements TreeNode {
     public boolean equals(Object o) {
         return o instanceof PathTreeNode
             && nodePath.equals(((PathTreeNode) o).nodePath)
-//            && children.equals(((PathTreeNode) o).children) // oops :)
-            && (parent == null || parent.equals(((PathTreeNode) o).parent));
+            && ((parent == null && ((PathTreeNode) o).parent == null) || (parent != null && parent.equals(((PathTreeNode) o).parent)));
     }
 
     @Override

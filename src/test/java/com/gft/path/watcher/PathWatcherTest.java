@@ -96,4 +96,23 @@ public class PathWatcherTest {
         ArgumentCaptor<PollWatchServiceEvents> argument = ArgumentCaptor.forClass(PollWatchServiceEvents.class);
         verify(executorService).submit(argument.capture());
     }
+
+    @Test
+    public void itRegistersOnlyDirectories() throws Exception {
+        WatchService watchService = mock(WatchService.class);
+        PathWatcher pathWatcher = new PathWatcher(watchService, mock(ExecutorService.class));
+
+        Path path = mock(Path.class);
+        FileSystem fileSystem = mock(FileSystem.class);
+        FileSystemProvider fileSystemProvider = mock(FileSystemProvider.class);
+        BasicFileAttributes basicFileAttributes = mock(BasicFileAttributes.class);
+
+        when(path.getFileSystem()).thenReturn(fileSystem);
+        when(fileSystem.provider()).thenReturn(fileSystemProvider);
+        when(fileSystemProvider.readAttributes(path, BasicFileAttributes.class)).thenReturn(basicFileAttributes);
+        when(basicFileAttributes.isDirectory()).thenReturn(false);
+        pathWatcher.registerPath(path);
+
+        verify(path, never()).register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+    }
 }

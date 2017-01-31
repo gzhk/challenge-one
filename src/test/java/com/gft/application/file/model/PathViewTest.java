@@ -11,15 +11,15 @@ public class PathViewTest {
 
     @Test
     public void returnsTrueIfPathAndIdAreEqual() throws Exception {
-        PathView id = new PathView("id", "/tmp");
+        PathView pathView = new PathView("id", "/tmp");
 
-        assertThat(id.equals(new PathView("id", "/tmp")), is(true));
+        assertThat(pathView.equals(new PathView("id", "/tmp")), is(true));
     }
 
     @Test
     public void returnsHashCodeComputedBasedOnIdAndPath() throws Exception {
-        PathView id = new PathView("id", "/tmp");
+        PathView pathView = new PathView("id", "/tmp");
 
-        assertThat(id.hashCode(), is(Objects.hash("id", "/tmp")));
+        assertThat(pathView.hashCode(), is(Objects.hash("id")));
     }
 }
