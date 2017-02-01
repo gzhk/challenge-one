@@ -10,7 +10,7 @@ import rx.Observable;
 
 import java.nio.file.Path;
 
-public final class PathTreeNodeObservableFactory {
+public class PathTreeNodeObservableFactory {
 
     private final PathTreeNodeFactory pathTreeNodeFactory;
     private final PathTreeNodeCollectionFactory pathTreeNodeCollectionFactory;

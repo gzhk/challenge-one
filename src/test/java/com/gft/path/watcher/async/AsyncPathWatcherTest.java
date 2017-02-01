@@ -1,5 +1,10 @@
-package com.gft.path.watcher;
+package com.gft.path.watcher.async;
 
+import com.gft.path.watcher.CouldNotRegisterPath;
+import com.gft.path.watcher.NewPathsIterator;
+import com.gft.path.watcher.PathWatcher;
+import com.gft.path.watcher.PollWatchServiceEvents;
+import com.gft.path.watcher.async.AsyncPathWatcher;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -17,12 +22,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
-public class PathWatcherTest {
+public class AsyncPathWatcherTest {
 
     @Test
     public void registersPathWithWatchService() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PathWatcher pathWatcher = new PathWatcher(watchService, mock(ExecutorService.class));
+        PathWatcher pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
@@ -41,7 +46,7 @@ public class PathWatcherTest {
     @Test(expected = CouldNotRegisterPath.class)
     public void wrapsIOException() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PathWatcher pathWatcher = new PathWatcher(watchService, mock(ExecutorService.class));
+        PathWatcher pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
@@ -60,14 +65,14 @@ public class PathWatcherTest {
 
     @Test
     public void itIsAutoClosable() throws Exception {
-        assertThat(new PathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(AutoCloseable.class)));
+        assertThat(new AsyncPathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(AutoCloseable.class)));
     }
 
     @Test
     public void itClosesWatchServiceAndExecutorService() throws Exception {
         WatchService watchService = mock(WatchService.class);
         ExecutorService executorService = mock(ExecutorService.class);
-        PathWatcher pathWatcher = new PathWatcher(watchService, executorService);
+        AsyncPathWatcher pathWatcher = new AsyncPathWatcher(watchService, executorService);
 
         pathWatcher.close();
         verify(watchService).close();
@@ -76,19 +81,19 @@ public class PathWatcherTest {
 
     @Test
     public void itIsIterable() throws Exception {
-        assertThat(new PathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(Iterable.class)));
+        assertThat(new AsyncPathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(Iterable.class)));
     }
 
     @Test
     public void returnsNewPathsIterator() throws Exception {
-        PathWatcher pathTreeNodes = new PathWatcher(mock(WatchService.class), mock(ExecutorService.class));
+        AsyncPathWatcher pathTreeNodes = new AsyncPathWatcher(mock(WatchService.class), mock(ExecutorService.class));
         assertThat(pathTreeNodes.iterator(), is(instanceOf(NewPathsIterator.class)));
     }
 
     @Test
     public void startsPollsWatchEventsDuringInitialization() throws Exception {
         ExecutorService executorService = mock(ExecutorService.class);
-        PathWatcher pathTreeNodes = new PathWatcher(mock(WatchService.class), executorService);
+        PathWatcher pathTreeNodes = new AsyncPathWatcher(mock(WatchService.class), executorService);
 
         pathTreeNodes.start(mock(Path.class));
 
@@ -99,7 +104,7 @@ public class PathWatcherTest {
     @Test
     public void itRegistersOnlyDirectories() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PathWatcher pathWatcher = new PathWatcher(watchService, mock(ExecutorService.class));
+        PathWatcher pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
