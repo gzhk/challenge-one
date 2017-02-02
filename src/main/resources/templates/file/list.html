@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="row" id="path-three">
+        <div class="row" payload="path-three">
         </div>
     </div>
 
@@ -18,13 +18,31 @@
             var socket = new SockJS('/websocket');
             var stompClient = Stomp.over(socket);
             var $row = $("#path-three");
+            var awaitingNodes = [];
+            var appendAwaitingNodes = function () {
+            };
 
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
 
                 stompClient.subscribe('/topic/new-path', function (greeting) {
                     var pathTreeNode = JSON.parse(greeting.body);
-                    $row.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
+
+                    if (pathTreeNode.parentId == null) {
+                        $row.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
+                    } else {
+                        var $parent = $('#' + pathTreeNode.parentId);
+
+                        if ($parent.length > 0) {
+                            $parent.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
+                        } else {
+                            awaitingNodes.push(pathTreeNode);
+                        }
+                    }
+
+                    if (awaitingNodes.length > 0) {
+                        appendAwaitingNodes();
+                    }
                 });
 
                 stompClient.send("/app/current-paths", {}, {});

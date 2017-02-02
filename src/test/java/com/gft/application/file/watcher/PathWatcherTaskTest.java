@@ -45,7 +45,7 @@ public class PathWatcherTaskTest {
 
         pathWatcherService.run();
 
-        verify(pathWatcher, times(1)).start(path);
+        verify(pathWatcher, times(1)).start();
         verify(pathWatcher, times(1)).registerPath(path);
         verify(pathWatcher, times(1)).registerPath(pathFromPathWatcher);
         verify(simpMessagingTemplate, times(1))

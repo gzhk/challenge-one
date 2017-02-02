@@ -6,47 +6,54 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 public final class PollWatchServiceEvents implements Runnable {
 
-    @NotNull
-    private final Path rootPath;
     private final WatchService watchService;
+    private final Map<WatchKey, Path> keys;
     private final BlockingQueue<PathTreeNode> pathQueue;
 
-    public PollWatchServiceEvents(@NotNull Path rootPath, @NotNull WatchService watchService, @NotNull BlockingQueue<PathTreeNode> pathQueue) {
-        this.rootPath = rootPath;
+    public PollWatchServiceEvents(
+        @NotNull final WatchService watchService,
+        @NotNull final Map<WatchKey, Path> keys,
+        @NotNull final BlockingQueue<PathTreeNode> pathQueue
+    ) {
         this.watchService = watchService;
+        this.keys = keys;
         this.pathQueue = pathQueue;
     }
 
     @Override
     public void run() {
         while (true) {
-            final WatchKey key;
+            final WatchKey watchKey;
 
             try {
-                key = watchService.take();
+                watchKey = watchService.take();
             } catch (InterruptedException e) {
                 return;
             }
 
-            key.pollEvents()
+            Path dir = keys.get(watchKey);
+
+            watchKey.pollEvents()
                 .stream()
                 .filter(e -> (e.kind() != OVERFLOW))
                 .map(e -> ((WatchEvent<Path>) e).context())
                 .forEach(path -> {
                     try {
-                        Files.walkFileTree(rootPath.resolve(path), new RegisterPaths(rootPath, pathQueue));
+                        Files.walkFileTree(dir.resolve(path), new RegisterPaths(dir, pathQueue));
                     } catch (IOException e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }
                 });
 
-            boolean valid = key.reset();
+            boolean valid = watchKey.reset();
 
             if (!valid) {
                 break;
@@ -80,11 +87,15 @@ public final class PollWatchServiceEvents implements Runnable {
 
         private void registerPath(Path path) {
             try {
+                PathTreeNode pathTreeNode;
+
                 if (path.equals(rootPath)) {
-                    pathQueue.put(new PathTreeNode(path));
+                    pathTreeNode = new PathTreeNode(path);
                 } else {
-                    pathQueue.put(new PathTreeNode(path, new PathTreeNode(path.getParent())));
+                    pathTreeNode = new PathTreeNode(path, new PathTreeNode(path.getParent()));
                 }
+
+                pathQueue.put(pathTreeNode);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

@@ -36,7 +36,7 @@ final class PathTreeNodeIterator implements Iterator<PathTreeNode> {
         }
 
         boolean hasNext = this.hasNext;
-        this.hasNext = !next.equals(lastPath);
+        this.hasNext = !next.getPath().equals(lastPath.getPath());
 
         return hasNext;
     }

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 public interface PathWatcher extends AutoCloseable, Iterable<PathTreeNode> {
 
-    void start(Path rootPath);
+    void start();
 
     void registerPath(@NotNull Path path) throws CouldNotRegisterPath;
 }

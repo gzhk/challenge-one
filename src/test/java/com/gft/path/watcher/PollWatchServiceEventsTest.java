@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -24,8 +26,8 @@ public class PollWatchServiceEventsTest {
     @Test
     public void itIsRunnable() throws Exception {
         PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(
-            mock(Path.class),
             mock(WatchService.class),
+            new HashMap<>(),
             new ArrayBlockingQueue<>(16)
         );
 
@@ -61,7 +63,10 @@ public class PollWatchServiceEventsTest {
         when(watchEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
         when(watchEvent.context()).thenReturn(rootPath);
 
-        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(rootPath, watchService, pathQueue);
+        HashMap<WatchKey, Path> keys = new HashMap<>();
+        keys.put(watchKey, rootPath);
+
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, keys, pathQueue);
         pollWatchServiceEvents.run();
 
         assertTrue(pathQueue.contains(new PathTreeNode(rootPath)));
@@ -77,7 +82,7 @@ public class PollWatchServiceEventsTest {
 
         when(watchService.take()).thenThrow(InterruptedException.class);
 
-        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(mock(Path.class), watchService, pathQueue);
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new HashMap<>(), pathQueue);
         pollWatchServiceEvents.run();
     }
 
@@ -99,7 +104,7 @@ public class PollWatchServiceEventsTest {
         when(watchEvent.context()).thenReturn(path);
         when(watchKey.isValid()).thenReturn(false);
 
-        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(mock(Path.class), watchService, pathQueue);
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new HashMap<>(), pathQueue);
         pollWatchServiceEvents.run();
         verify(secondWatchKey, never()).pollEvents();
     }
@@ -126,7 +131,7 @@ public class PollWatchServiceEventsTest {
         when(watchEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
         when(watchEvent.context()).thenReturn(rootPath);
 
-        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(rootPath, watchService, pathQueue);
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new HashMap<>(), pathQueue);
         pollWatchServiceEvents.run();
     }
 }

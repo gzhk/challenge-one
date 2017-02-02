@@ -36,7 +36,7 @@ public final class PathWatcherTask implements Runnable {
     @Override
     public void run() {
         try (PathWatcher pathWatcher = pathWatcherFactory.create()) {
-            pathWatcher.start(path);
+            pathWatcher.start();
 
             Observable
                 .merge(pathTreeNodeObservableFactory.createObservableForPath(path), Observable.from(pathWatcher))

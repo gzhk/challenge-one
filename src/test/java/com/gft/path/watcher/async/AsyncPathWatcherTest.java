@@ -4,15 +4,11 @@ import com.gft.path.watcher.CouldNotRegisterPath;
 import com.gft.path.watcher.NewPathsIterator;
 import com.gft.path.watcher.PathWatcher;
 import com.gft.path.watcher.PollWatchServiceEvents;
-import com.gft.path.watcher.async.AsyncPathWatcher;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +34,8 @@ public class AsyncPathWatcherTest {
         when(fileSystem.provider()).thenReturn(fileSystemProvider);
         when(fileSystemProvider.readAttributes(path, BasicFileAttributes.class)).thenReturn(basicFileAttributes);
         when(basicFileAttributes.isDirectory()).thenReturn(true);
+        when(path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE)).thenReturn(mock(WatchKey.class));
+
         pathWatcher.registerPath(path);
 
         verify(path).register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
@@ -95,7 +93,7 @@ public class AsyncPathWatcherTest {
         ExecutorService executorService = mock(ExecutorService.class);
         PathWatcher pathTreeNodes = new AsyncPathWatcher(mock(WatchService.class), executorService);
 
-        pathTreeNodes.start(mock(Path.class));
+        pathTreeNodes.start();
 
         ArgumentCaptor<PollWatchServiceEvents> argument = ArgumentCaptor.forClass(PollWatchServiceEvents.class);
         verify(executorService).submit(argument.capture());

@@ -8,12 +8,11 @@ import com.gft.path.watcher.PollWatchServiceEvents;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -22,6 +21,7 @@ public final class AsyncPathWatcher implements PathWatcher {
     private final WatchService watchService;
     private final ExecutorService executorService;
     private final BlockingQueue<PathTreeNode> newPathsQueue = new LinkedBlockingQueue<>();
+    private final Map<WatchKey, Path> keys = new ConcurrentHashMap<>();
 
     public AsyncPathWatcher(@NotNull final WatchService watchService, @NotNull final ExecutorService executorService) {
         this.watchService = watchService;
@@ -29,8 +29,8 @@ public final class AsyncPathWatcher implements PathWatcher {
     }
 
     @Override
-    public void start(Path rootPath) {
-        this.executorService.submit(new PollWatchServiceEvents(rootPath, watchService, newPathsQueue));
+    public void start() {
+        this.executorService.submit(new PollWatchServiceEvents(watchService, keys, newPathsQueue));
     }
 
     @Override
@@ -40,7 +40,8 @@ public final class AsyncPathWatcher implements PathWatcher {
         }
 
         try {
-            path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+            WatchKey watchKey = path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+            keys.put(watchKey, path);
         } catch (IOException e) {
             throw new CouldNotRegisterPath(path, e);
         }
