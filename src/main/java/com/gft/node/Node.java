@@ -4,7 +4,7 @@ import java.util.Collection;
 
 public interface Node<P> {
 
-    Collection<Node<P>> children();
+    Collection<Node<P>> children() throws CannotRetrieveChildren;
 
     P getPayload();
 }

@@ -21,7 +21,7 @@ public final class SimpleNode<P> implements Node<P> {
     }
 
     @Override
-    public Collection<Node<P>> children() {
+    public Collection<Node<P>> children() throws CannotRetrieveChildren {
         return new ArrayList<>(children);
     }
 

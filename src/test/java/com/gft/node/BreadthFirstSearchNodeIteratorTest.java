@@ -1,11 +1,16 @@
 package com.gft.node;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.NoSuchElementException;
+import java.util.zip.CRC32;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class BreadthFirstSearchNodeIteratorTest {
 
@@ -51,5 +56,14 @@ public class BreadthFirstSearchNodeIteratorTest {
 
         assertThat(iterator.hasNext(), is(false));
         iterator.next();
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void wrapsCannotRetrieveChildrenException() throws Exception {
+        Node node = mock(Node.class);
+        when(node.children()).thenThrow(CannotRetrieveChildren.class);
+
+        BreadthFirstSearchNodeIterator<Object> objectBreadthFirstSearchNodeIterator = new BreadthFirstSearchNodeIterator<>(node);
+        objectBreadthFirstSearchNodeIterator.next();
     }
 }
