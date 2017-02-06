@@ -1,19 +1,20 @@
 package com.gft.application.file.model;
 
-import com.gft.path.treenode.PathTreeNode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+
+import java.nio.file.Path;
 
 @Service
 public final class PathViewFactory {
 
-    public PathView createFromPathTreeNode(PathTreeNode pathTreeNode) {
-        String pathString = pathTreeNode.toString();
+    public PathView createFromPathTreeNode(Path path) {
+        String pathString = path.toString();
 
-        if (pathTreeNode.getParent() != null) {
+        if (path.getParent() != null) {
             return new PathView(
                 DigestUtils.md5DigestAsHex(pathString.getBytes()),
-                DigestUtils.md5DigestAsHex(pathTreeNode.getParent().toString().getBytes()),
+                DigestUtils.md5DigestAsHex(path.getParent().toString().getBytes()),
                 pathString
             );
         }

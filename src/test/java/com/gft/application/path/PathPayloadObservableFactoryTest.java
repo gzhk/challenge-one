@@ -1,4 +1,4 @@
-package com.gft.path.node;
+package com.gft.application.path;
 
 import com.gft.node.NodePayloadIterableFactory;
 import com.gft.node.SimpleNode;

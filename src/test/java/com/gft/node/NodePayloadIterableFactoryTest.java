@@ -2,11 +2,6 @@ package com.gft.node;
 
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.isA;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-
 public class NodePayloadIterableFactoryTest {
 
     @Test

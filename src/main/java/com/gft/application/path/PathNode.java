@@ -1,4 +1,4 @@
-package com.gft.path.node;
+package com.gft.application.path;
 
 import com.gft.node.CannotRetrieveChildren;
 import com.gft.node.Node;
@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
