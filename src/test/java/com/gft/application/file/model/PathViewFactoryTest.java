@@ -1,5 +1,6 @@
 package com.gft.application.file.model;
 
+import com.gft.path.treenode.PathTreeNode;
 import org.junit.Test;
 import org.springframework.util.DigestUtils;
 
@@ -21,7 +22,7 @@ public class PathViewFactoryTest {
 
         PathViewFactory pathViewFactory = new PathViewFactory();
 
-        assertThat(pathViewFactory.createFromPathTreeNode(path), is(new PathView(md5Hash, "/tmp")));
+        assertThat(pathViewFactory.createFromPathTreeNode(new PathTreeNode(path)), is(new PathView(md5Hash, "/tmp")));
     }
 
     @Test
@@ -38,7 +39,7 @@ public class PathViewFactoryTest {
         String parentMd5Hash = DigestUtils.md5DigestAsHex(new ByteArrayInputStream("/tmp".getBytes()));
 
         PathViewFactory pathViewFactory = new PathViewFactory();
-        PathView expectedPathTreeNode = pathViewFactory.createFromPathTreeNode(path);
+        PathView expectedPathTreeNode = pathViewFactory.createFromPathTreeNode(new PathTreeNode(path, new PathTreeNode(parentPath)));
 
         assertThat(expectedPathTreeNode, is(new PathView(md5Hash, parentMd5Hash, "/tmp/sub_dir")));
     }

@@ -1,4 +1,4 @@
-package com.gft.application.path;
+package com.gft.path.node;
 
 import com.gft.node.CannotRetrieveChildren;
 import com.google.common.collect.ImmutableList;
