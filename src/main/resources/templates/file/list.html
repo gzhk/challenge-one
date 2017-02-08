@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="row" payload="path-three">
+        <div class="row" id="path-three">
         </div>
     </div>
 
@@ -28,21 +28,23 @@
                 stompClient.subscribe('/topic/new-path', function (greeting) {
                     var pathTreeNode = JSON.parse(greeting.body);
 
-                    if (pathTreeNode.parentId == null) {
-                        $row.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
-                    } else {
-                        var $parent = $('#' + pathTreeNode.parentId);
+                    $row.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
 
-                        if ($parent.length > 0) {
-                            $parent.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
-                        } else {
-                            awaitingNodes.push(pathTreeNode);
-                        }
-                    }
-
-                    if (awaitingNodes.length > 0) {
-                        appendAwaitingNodes();
-                    }
+//                    if (pathTreeNode.parentId == null) {
+//                        $row.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
+//                    } else {
+//                        var $parent = $('#' + pathTreeNode.parentId);
+//
+//                        if ($parent.length > 0) {
+//                            $parent.append('<div id="' + pathTreeNode.id + '">' + pathTreeNode.name + '</div>');
+//                        } else {
+//                            awaitingNodes.push(pathTreeNode);
+//                        }
+//                    }
+//
+//                    if (awaitingNodes.length > 0) {
+//                        appendAwaitingNodes();
+//                    }
                 });
 
                 stompClient.send("/app/current-paths", {}, {});

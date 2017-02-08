@@ -1,6 +1,5 @@
 package com.gft.path.watcher;
 
-import com.gft.path.treenode.PathTreeNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
@@ -10,15 +9,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class PollWatchServiceEventsTest {
@@ -27,7 +26,7 @@ public class PollWatchServiceEventsTest {
     public void itIsRunnable() throws Exception {
         PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(
             mock(WatchService.class),
-            new HashMap<>(),
+            new ConcurrentHashMap<>(),
             new ArrayBlockingQueue<>(16)
         );
 
@@ -49,7 +48,7 @@ public class PollWatchServiceEventsTest {
         Path subDirectory = directory.resolve("subdirectory");
         Files.createDirectory(subDirectory);
 
-        ArrayBlockingQueue<PathTreeNode> pathQueue = new ArrayBlockingQueue<>(16);
+        ArrayBlockingQueue<Path> pathQueue = new ArrayBlockingQueue<>(16);
         WatchService watchService = mock(WatchService.class);
 
         WatchKey watchKey = mock(WatchKey.class);
@@ -63,32 +62,29 @@ public class PollWatchServiceEventsTest {
         when(watchEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
         when(watchEvent.context()).thenReturn(rootPath);
 
-        HashMap<WatchKey, Path> keys = new HashMap<>();
+        ConcurrentMap<WatchKey, Path> keys = new ConcurrentHashMap<>();
         keys.put(watchKey, rootPath);
 
         PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, keys, pathQueue);
         pollWatchServiceEvents.run();
 
-        assertTrue(pathQueue.contains(new PathTreeNode(rootPath)));
-        assertTrue(pathQueue.contains(new PathTreeNode(directory, new PathTreeNode(rootPath))));
-        assertTrue(pathQueue.contains(new PathTreeNode(subDirectory, new PathTreeNode(directory))));
-        assertTrue(pathQueue.contains(new PathTreeNode(file, new PathTreeNode(rootPath))));
+        assertThat(pathQueue, hasItems(rootPath, directory, subDirectory, file));
     }
 
     @Test
     public void abortsExecutionWhenGotInterruptedException() throws Exception {
-        ArrayBlockingQueue<PathTreeNode> pathQueue = new ArrayBlockingQueue<>(16);
+        ArrayBlockingQueue<Path> pathQueue = new ArrayBlockingQueue<>(16);
         WatchService watchService = mock(WatchService.class);
 
         when(watchService.take()).thenThrow(InterruptedException.class);
 
-        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new HashMap<>(), pathQueue);
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new ConcurrentHashMap<>(), pathQueue);
         pollWatchServiceEvents.run();
     }
 
     @Test
     public void itFinishesIfWatchKeyIsNoLongerValid() throws Exception {
-        ArrayBlockingQueue<PathTreeNode> pathQueue = new ArrayBlockingQueue<>(16);
+        ArrayBlockingQueue<Path> pathQueue = new ArrayBlockingQueue<>(16);
         WatchService watchService = mock(WatchService.class);
 
         WatchKey watchKey = mock(WatchKey.class);
@@ -104,7 +100,7 @@ public class PollWatchServiceEventsTest {
         when(watchEvent.context()).thenReturn(path);
         when(watchKey.isValid()).thenReturn(false);
 
-        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new HashMap<>(), pathQueue);
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new ConcurrentHashMap<>(), pathQueue);
         pollWatchServiceEvents.run();
         verify(secondWatchKey, never()).pollEvents();
     }
@@ -118,7 +114,7 @@ public class PollWatchServiceEventsTest {
         Path directory = rootPath.resolve("directory");
         Files.createDirectory(directory);
 
-        BlockingQueue<PathTreeNode> pathQueue = mock(BlockingQueue.class);
+        BlockingQueue<Path> pathQueue = mock(BlockingQueue.class);
         doThrow(InterruptedException.class).when(pathQueue).put(any());
         WatchService watchService = mock(WatchService.class);
 
@@ -131,7 +127,7 @@ public class PollWatchServiceEventsTest {
         when(watchEvent.kind()).thenReturn(StandardWatchEventKinds.ENTRY_CREATE);
         when(watchEvent.context()).thenReturn(rootPath);
 
-        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new HashMap<>(), pathQueue);
+        PollWatchServiceEvents pollWatchServiceEvents = new PollWatchServiceEvents(watchService, new ConcurrentHashMap<>(), pathQueue);
         pollWatchServiceEvents.run();
     }
 }

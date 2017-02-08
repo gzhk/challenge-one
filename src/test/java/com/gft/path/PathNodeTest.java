@@ -1,6 +1,7 @@
-package com.gft.path.node;
+package com.gft.path;
 
 import com.gft.node.CannotRetrieveChildren;
+import com.gft.path.PathNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
@@ -10,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -56,14 +58,6 @@ public class PathNodeTest {
         assertThat(pathNode.children().size(), is(0));
     }
 
-    @Test(expected = CannotRetrieveChildren.class)
-    public void wrapsIOException() throws Exception {
-        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
-        Path path = fileSystem.getPath("/root");
-
-        new PathNode(path).children();
-    }
-
     @Test
     public void returnsCollectionWithChildren() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
@@ -78,5 +72,16 @@ public class PathNodeTest {
         Files.write(file, ImmutableList.of("content"), StandardCharsets.UTF_8);
 
         assertThat(new PathNode(rootPath).children(), hasItems(new PathNode(directory), new PathNode(file)));
+    }
+
+    @Test
+    public void returnsEmptyListIfPathIsNotADirectory() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        Path file = fileSystem.getPath("file.txt");
+        Files.write(file, ImmutableList.of("content"), StandardCharsets.UTF_8);
+
+        PathNode pathNode = new PathNode(file);
+
+        assertThat(pathNode.children(), is(new ArrayList<>()));
     }
 }

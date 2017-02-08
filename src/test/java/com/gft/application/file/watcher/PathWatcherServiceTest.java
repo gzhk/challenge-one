@@ -1,35 +1,69 @@
 package com.gft.application.file.watcher;
 
-import com.gft.application.file.model.PathViewFactory;
-import com.gft.path.PathTreeNodeObservableFactory;
-import com.gft.path.watcher.PathWatcherFactory;
+import com.gft.node.NodePayloadObservableFactory;
+import com.gft.node.watcher.PayloadWatcher;
+import com.gft.path.PathNode;
+import com.gft.path.watcher.async.AsyncPathWatcher;
+import com.gft.path.watcher.async.AsyncPathWatcherFactory;
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
+import edu.emory.mathcs.backport.java.util.Collections;
 import org.junit.Test;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import rx.Observable;
+import rx.observables.ConnectableObservable;
 
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
+import java.util.ArrayList;
 
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
 
 public class PathWatcherServiceTest {
 
+    @Test(expected = PathWatcherServiceFailed.class)
+    public void wrapsExceptionWhenTryingToCloseAsyncPathWatcher() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
+        Path path = fileSystem.getPath("/tmp");
+        Files.createDirectories(path);
+
+        PathNode pathNode = new PathNode(path);
+        NodePayloadObservableFactory nodePayloadObservableFactory = mock(NodePayloadObservableFactory.class);
+        ConnectableObservable connectableObservable = mock(ConnectableObservable.class);
+
+        AsyncPathWatcherFactory asyncPathWatcherFactory = mock(AsyncPathWatcherFactory.class);
+        AsyncPathWatcher asyncPathWatcher = mock(AsyncPathWatcher.class);
+        when(asyncPathWatcherFactory.create()).thenReturn(asyncPathWatcher);
+        doThrow(Exception.class).when(asyncPathWatcher).close();
+
+        when(nodePayloadObservableFactory.createWithWatcher(eq(pathNode), any(PayloadWatcher.class))).thenReturn(connectableObservable);
+        PathWatcherService pathWatcherService = new PathWatcherService(asyncPathWatcherFactory, nodePayloadObservableFactory);
+
+        pathWatcherService.watch(pathNode, o -> {});
+    }
+
     @Test
-    public void startsNewTaskForPath() throws Exception {
-        ExecutorService executorService = mock(ExecutorService.class);
+    public void sendsItemsFromStreamThroughWebSockets() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
-        PathWatcherService pathWatcherService = new PathWatcherService(
-            executorService,
-            mock(SimpMessagingTemplate.class),
-            mock(PathTreeNodeObservableFactory.class),
-            new PathViewFactory(),
-            mock(PathWatcherFactory.class)
-        );
+        Path path = fileSystem.getPath("/tmp");
+        Files.createDirectories(path);
 
-        pathWatcherService.watchPath(mock(Path.class));
+        PathNode pathNode = new PathNode(path);
+        NodePayloadObservableFactory nodePayloadObservableFactory = mock(NodePayloadObservableFactory.class);
+        ConnectableObservable<Path> connectableObservable = ConnectableObservable.from(Collections.singleton(path)).publish();
 
-        verify(executorService, times(1)).submit(isA(PathWatcherTask.class));
+        AsyncPathWatcherFactory asyncPathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
+        when(nodePayloadObservableFactory.createWithWatcher(eq(pathNode), any(PayloadWatcher.class))).thenReturn(connectableObservable);
+        PathWatcherService pathWatcherService = new PathWatcherService(asyncPathWatcherFactory, nodePayloadObservableFactory);
+
+        ArrayList<Path> emittedPaths = new ArrayList<>();
+
+        pathWatcherService.watch(pathNode, emittedPaths::add);
+
+        assertThat(emittedPaths, hasItem(path));
     }
 }

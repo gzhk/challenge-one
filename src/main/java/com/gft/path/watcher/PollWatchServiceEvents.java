@@ -1,14 +1,13 @@
 package com.gft.path.watcher;
 
-import com.gft.path.treenode.PathTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
@@ -16,12 +15,12 @@ public final class PollWatchServiceEvents implements Runnable {
 
     private final WatchService watchService;
     private final Map<WatchKey, Path> keys;
-    private final BlockingQueue<PathTreeNode> pathQueue;
+    private final BlockingQueue<Path> pathQueue;
 
     public PollWatchServiceEvents(
         @NotNull final WatchService watchService,
-        @NotNull final Map<WatchKey, Path> keys,
-        @NotNull final BlockingQueue<PathTreeNode> pathQueue
+        @NotNull final ConcurrentMap<WatchKey, Path> keys,
+        @NotNull final BlockingQueue<Path> pathQueue
     ) {
         this.watchService = watchService;
         this.keys = keys;
@@ -64,9 +63,9 @@ public final class PollWatchServiceEvents implements Runnable {
     private static class RegisterPaths extends SimpleFileVisitor<Path> {
 
         private final Path rootPath;
-        private final BlockingQueue<PathTreeNode> pathQueue;
+        private final BlockingQueue<Path> pathQueue;
 
-        RegisterPaths(@NotNull final Path rootPath, @NotNull final BlockingQueue<PathTreeNode> pathQueue) {
+        RegisterPaths(@NotNull final Path rootPath, @NotNull final BlockingQueue<Path> pathQueue) {
             this.rootPath = rootPath;
             this.pathQueue = pathQueue;
         }
@@ -87,15 +86,7 @@ public final class PollWatchServiceEvents implements Runnable {
 
         private void registerPath(Path path) {
             try {
-                PathTreeNode pathTreeNode;
-
-                if (path.equals(rootPath)) {
-                    pathTreeNode = new PathTreeNode(path);
-                } else {
-                    pathTreeNode = new PathTreeNode(path, new PathTreeNode(path.getParent()));
-                }
-
-                pathQueue.put(pathTreeNode);
+                pathQueue.put(path);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

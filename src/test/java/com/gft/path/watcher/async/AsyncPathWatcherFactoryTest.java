@@ -1,13 +1,12 @@
 package com.gft.path.watcher.async;
 
-import com.gft.path.watcher.CouldNotCreatePathWatcher;
-import com.gft.path.watcher.PathWatcher;
-import com.gft.path.watcher.PathWatcherFactory;
-import com.gft.path.watcher.async.AsyncPathWatcherFactory;
+import com.gft.node.watcher.CouldNotCreatePayloadWatcher;
+import com.gft.node.watcher.PayloadWatcher;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.nio.file.Path;
 import java.nio.file.WatchService;
 
 import static org.hamcrest.CoreMatchers.not;
@@ -22,17 +21,17 @@ public class AsyncPathWatcherFactoryTest {
         FileSystem fileSystem = mock(FileSystem.class);
         when(fileSystem.newWatchService()).thenReturn(mock(WatchService.class));
 
-        PathWatcherFactory pathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
-        PathWatcher pathWatcher = pathWatcherFactory.create();
+        AsyncPathWatcherFactory pathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
+        PayloadWatcher<Path> pathWatcher = pathWatcherFactory.create();
 
         assertThat(pathWatcher, is(not(pathWatcherFactory.create())));
     }
 
-    @Test(expected = CouldNotCreatePathWatcher.class)
+    @Test(expected = CouldNotCreatePayloadWatcher.class)
     public void wrapsIOException() throws Exception {
         FileSystem fileSystem = mock(FileSystem.class);
         doThrow(IOException.class).when(fileSystem).newWatchService();
-        PathWatcherFactory pathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
+        AsyncPathWatcherFactory pathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
 
         pathWatcherFactory.create();
     }

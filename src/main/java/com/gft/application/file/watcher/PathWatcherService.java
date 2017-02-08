@@ -1,45 +1,41 @@
 package com.gft.application.file.watcher;
 
-import com.gft.application.file.model.PathViewFactory;
-import com.gft.path.PathTreeNodeObservableFactory;
-import com.gft.path.watcher.PathWatcherFactory;
+import com.gft.node.NodePayloadObservableFactory;
+import com.gft.path.PathNode;
+import com.gft.path.watcher.async.AsyncPathWatcher;
+import com.gft.path.watcher.async.AsyncPathWatcherFactory;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import rx.functions.Action1;
+import rx.observables.ConnectableObservable;
+import rx.schedulers.Schedulers;
 
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
 
+@Service
 public class PathWatcherService {
 
-    private final ExecutorService executorService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
-    private final PathTreeNodeObservableFactory pathTreeNodeObservableFactory;
-    private final PathViewFactory pathViewFactory;
-    private final PathWatcherFactory pathWatcherFactory;
+    private final AsyncPathWatcherFactory asyncPathWatcherFactory;
+    private final NodePayloadObservableFactory nodePayloadObservableFactory;
 
+    @Autowired
     public PathWatcherService(
-        @NotNull final ExecutorService executorService,
-        @NotNull final SimpMessagingTemplate simpMessagingTemplate,
-        @NotNull final PathTreeNodeObservableFactory pathTreeNodeObservableFactory,
-        @NotNull final PathViewFactory pathViewFactory,
-        @NotNull final PathWatcherFactory pathWatcherFactory
+        @NotNull final AsyncPathWatcherFactory asyncPathWatcherFactory,
+        @NotNull final NodePayloadObservableFactory nodePayloadObservableFactory
     ) {
-        this.executorService = executorService;
-        this.simpMessagingTemplate = simpMessagingTemplate;
-        this.pathTreeNodeObservableFactory = pathTreeNodeObservableFactory;
-        this.pathViewFactory = pathViewFactory;
-        this.pathWatcherFactory = pathWatcherFactory;
+        this.asyncPathWatcherFactory = asyncPathWatcherFactory;
+        this.nodePayloadObservableFactory = nodePayloadObservableFactory;
     }
 
-    public void watchPath(Path path) {
-        executorService.submit(
-            new PathWatcherTask(
-                path,
-                simpMessagingTemplate,
-                pathTreeNodeObservableFactory,
-                pathViewFactory,
-                pathWatcherFactory
-            )
-        );
+    public void watch(@NotNull final PathNode pathNode, @NotNull final Action1<Path> subscriber) {
+        try (AsyncPathWatcher asyncPathWatcher = asyncPathWatcherFactory.create()) {
+            ConnectableObservable<Path> connectableObservable = nodePayloadObservableFactory.createWithWatcher(pathNode, asyncPathWatcher);
+            connectableObservable.subscribeOn(Schedulers.io());
+            connectableObservable.subscribe(subscriber);
+            connectableObservable.connect();
+        } catch (Exception e) {
+            throw new PathWatcherServiceFailed(e.getMessage(), e);
+        }
     }
 }

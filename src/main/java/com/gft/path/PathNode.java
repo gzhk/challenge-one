@@ -1,4 +1,4 @@
-package com.gft.path.node;
+package com.gft.path;
 
 import com.gft.node.CannotRetrieveChildren;
 import com.gft.node.Node;
@@ -22,11 +22,15 @@ public final class PathNode implements Node<Path> {
 
     @Override
     public Collection<Node<Path>> children() throws CannotRetrieveChildren {
-        try {
-            return Files.list(path).map(PathNode::new).collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new CannotRetrieveChildren("Cannot list files in path: " + path  , e);
+        if (Files.isDirectory(path)) {
+            try {
+                return Files.list(path).map(PathNode::new).collect(Collectors.toList());
+            } catch (IOException e) {
+                throw new CannotRetrieveChildren("Cannot list files in path: " + path, e);
+            }
         }
+
+        return new ArrayList<>();
     }
 
     @Override

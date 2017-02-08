@@ -1,8 +1,8 @@
 package com.gft.path.watcher.async;
 
-import com.gft.path.watcher.CouldNotRegisterPath;
-import com.gft.path.watcher.NewPathsIterator;
-import com.gft.path.watcher.PathWatcher;
+import com.gft.node.watcher.CouldNotRegisterPayload;
+import com.gft.node.watcher.PayloadWatcher;
+import com.gft.collections.BlockingQueueIterator;
 import com.gft.path.watcher.PollWatchServiceEvents;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,7 +23,7 @@ public class AsyncPathWatcherTest {
     @Test
     public void registersPathWithWatchService() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PathWatcher pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
+        PayloadWatcher<Path> pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
@@ -36,15 +36,15 @@ public class AsyncPathWatcherTest {
         when(basicFileAttributes.isDirectory()).thenReturn(true);
         when(path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE)).thenReturn(mock(WatchKey.class));
 
-        pathWatcher.registerPath(path);
+        pathWatcher.call(path);
 
         verify(path).register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
     }
 
-    @Test(expected = CouldNotRegisterPath.class)
+    @Test(expected = CouldNotRegisterPayload.class)
     public void wrapsIOException() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PathWatcher pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
+        PayloadWatcher<Path>  pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
@@ -58,7 +58,7 @@ public class AsyncPathWatcherTest {
 
         when(path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE)).thenThrow(IOException.class);
 
-        pathWatcher.registerPath(path);
+        pathWatcher.call(path);
     }
 
     @Test
@@ -85,15 +85,13 @@ public class AsyncPathWatcherTest {
     @Test
     public void returnsNewPathsIterator() throws Exception {
         AsyncPathWatcher pathTreeNodes = new AsyncPathWatcher(mock(WatchService.class), mock(ExecutorService.class));
-        assertThat(pathTreeNodes.iterator(), is(instanceOf(NewPathsIterator.class)));
+        assertThat(pathTreeNodes.iterator(), is(instanceOf(BlockingQueueIterator.class)));
     }
 
     @Test
     public void startsPollsWatchEventsDuringInitialization() throws Exception {
         ExecutorService executorService = mock(ExecutorService.class);
-        PathWatcher pathTreeNodes = new AsyncPathWatcher(mock(WatchService.class), executorService);
-
-        pathTreeNodes.start();
+        new AsyncPathWatcher(mock(WatchService.class), executorService);
 
         ArgumentCaptor<PollWatchServiceEvents> argument = ArgumentCaptor.forClass(PollWatchServiceEvents.class);
         verify(executorService).submit(argument.capture());
@@ -102,7 +100,7 @@ public class AsyncPathWatcherTest {
     @Test
     public void itRegistersOnlyDirectories() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PathWatcher pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
+        PayloadWatcher<Path>  pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
@@ -113,7 +111,7 @@ public class AsyncPathWatcherTest {
         when(fileSystem.provider()).thenReturn(fileSystemProvider);
         when(fileSystemProvider.readAttributes(path, BasicFileAttributes.class)).thenReturn(basicFileAttributes);
         when(basicFileAttributes.isDirectory()).thenReturn(false);
-        pathWatcher.registerPath(path);
+        pathWatcher.call(path);
 
         verify(path, never()).register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
     }
