@@ -1,4 +1,4 @@
-package com.gft.path.watcher;
+package com.gft.path.watcher.async;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;

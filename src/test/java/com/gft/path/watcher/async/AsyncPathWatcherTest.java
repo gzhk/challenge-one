@@ -1,9 +1,8 @@
 package com.gft.path.watcher.async;
 
+import com.gft.collections.BlockingQueueIterator;
 import com.gft.node.watcher.CouldNotRegisterPayload;
 import com.gft.node.watcher.PayloadWatcher;
-import com.gft.collections.BlockingQueueIterator;
-import com.gft.path.watcher.PollWatchServiceEvents;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -11,7 +10,9 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -23,7 +24,7 @@ public class AsyncPathWatcherTest {
     @Test
     public void registersPathWithWatchService() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PayloadWatcher<Path> pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
+        PayloadWatcher<Path> pathWatcher = new AsyncPathWatcher(watchService, new ConcurrentHashMap<>(), new LinkedBlockingQueue<>());
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
@@ -44,7 +45,7 @@ public class AsyncPathWatcherTest {
     @Test(expected = CouldNotRegisterPayload.class)
     public void wrapsIOException() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PayloadWatcher<Path>  pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
+        PayloadWatcher<Path> pathWatcher = new AsyncPathWatcher(watchService, new ConcurrentHashMap<>(), new LinkedBlockingQueue<>());
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);
@@ -62,45 +63,23 @@ public class AsyncPathWatcherTest {
     }
 
     @Test
-    public void itIsAutoClosable() throws Exception {
-        assertThat(new AsyncPathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(AutoCloseable.class)));
-    }
-
-    @Test
-    public void itClosesWatchServiceAndExecutorService() throws Exception {
-        WatchService watchService = mock(WatchService.class);
-        ExecutorService executorService = mock(ExecutorService.class);
-        AsyncPathWatcher pathWatcher = new AsyncPathWatcher(watchService, executorService);
-
-        pathWatcher.close();
-        verify(watchService).close();
-        verify(executorService).shutdown();
-    }
-
-    @Test
     public void itIsIterable() throws Exception {
-        assertThat(new AsyncPathWatcher(mock(WatchService.class), mock(ExecutorService.class)), is(instanceOf(Iterable.class)));
+        assertThat(
+            new AsyncPathWatcher(mock(WatchService.class), new ConcurrentHashMap<>(), new LinkedBlockingQueue<>()),
+            is(instanceOf(Iterable.class))
+        );
     }
 
     @Test
     public void returnsNewPathsIterator() throws Exception {
-        AsyncPathWatcher pathTreeNodes = new AsyncPathWatcher(mock(WatchService.class), mock(ExecutorService.class));
+        AsyncPathWatcher pathTreeNodes = new AsyncPathWatcher(mock(WatchService.class), new ConcurrentHashMap<>(), new LinkedBlockingQueue<>());
         assertThat(pathTreeNodes.iterator(), is(instanceOf(BlockingQueueIterator.class)));
-    }
-
-    @Test
-    public void startsPollsWatchEventsDuringInitialization() throws Exception {
-        ExecutorService executorService = mock(ExecutorService.class);
-        new AsyncPathWatcher(mock(WatchService.class), executorService);
-
-        ArgumentCaptor<PollWatchServiceEvents> argument = ArgumentCaptor.forClass(PollWatchServiceEvents.class);
-        verify(executorService).submit(argument.capture());
     }
 
     @Test
     public void itRegistersOnlyDirectories() throws Exception {
         WatchService watchService = mock(WatchService.class);
-        PayloadWatcher<Path>  pathWatcher = new AsyncPathWatcher(watchService, mock(ExecutorService.class));
+        PayloadWatcher<Path> pathWatcher = new AsyncPathWatcher(watchService, new ConcurrentHashMap<>(), new LinkedBlockingQueue<>());
 
         Path path = mock(Path.class);
         FileSystem fileSystem = mock(FileSystem.class);

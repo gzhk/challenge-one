@@ -1,31 +1,35 @@
 package com.gft.path.watcher.async;
 
+import com.gft.collections.BlockingQueueIterator;
 import com.gft.node.watcher.CouldNotRegisterPayload;
 import com.gft.node.watcher.PayloadWatcher;
-import com.gft.collections.BlockingQueueIterator;
-import com.gft.path.watcher.PollWatchServiceEvents;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Iterator;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentMap;
 
-public class AsyncPathWatcher implements PayloadWatcher<Path>, AutoCloseable {
+public class AsyncPathWatcher implements PayloadWatcher<Path> {
 
     private final WatchService watchService;
-    private final ExecutorService executorService;
-    private final BlockingQueue<Path> newPathsQueue = new LinkedBlockingQueue<>();
-    private final ConcurrentMap<WatchKey, Path> keys = new ConcurrentHashMap<>();
+    private final ConcurrentMap<WatchKey, Path> keys;
+    private final BlockingQueue<Path> pathQueue;
 
-    public AsyncPathWatcher(@NotNull final WatchService watchService, @NotNull final ExecutorService executorService) {
+    public AsyncPathWatcher(
+        @NotNull final WatchService watchService,
+        @NotNull final ConcurrentMap<WatchKey, Path> keys,
+        @NotNull final BlockingQueue<Path> pathQueue
+    ) {
         this.watchService = watchService;
-        this.executorService = executorService;
-        init();
+        this.keys = keys;
+        this.pathQueue = pathQueue;
     }
 
-    private void init() {
-        this.executorService.submit(new PollWatchServiceEvents(watchService, keys, newPathsQueue));
+    @Override
+    public Iterator<Path> iterator() {
+        return new BlockingQueueIterator<>(pathQueue);
     }
 
     @Override
@@ -40,16 +44,5 @@ public class AsyncPathWatcher implements PayloadWatcher<Path>, AutoCloseable {
         } catch (IOException e) {
             throw new CouldNotRegisterPayload("Could not register path " + path, e);
         }
-    }
-
-    @Override
-    public Iterator<Path> iterator() {
-        return new BlockingQueueIterator<>(newPathsQueue);
-    }
-
-    @Override
-    public void close() throws Exception {
-        watchService.close();
-        executorService.shutdown();
     }
 }

@@ -7,6 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.nio.file.WatchKey;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 public class AsyncPathWatcherFactory {
@@ -17,9 +20,9 @@ public class AsyncPathWatcherFactory {
         this.fileSystem = fileSystem;
     }
 
-    public AsyncPathWatcher create() {
+    public AsyncPathWatcher create(ConcurrentMap<WatchKey, Path> keys, BlockingQueue<Path> newPathsQueue) {
         try {
-            return new AsyncPathWatcher(fileSystem.newWatchService(), Executors.newSingleThreadExecutor());
+            return new AsyncPathWatcher(fileSystem.newWatchService(), keys, newPathsQueue);
         } catch (IOException e) {
             throw new CouldNotCreatePayloadWatcher("Could not create path watcher factory. Previous exception: " + e.getMessage(), e);
         }

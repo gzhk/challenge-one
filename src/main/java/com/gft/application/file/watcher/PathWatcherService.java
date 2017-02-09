@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rx.functions.Action1;
 import rx.observables.ConnectableObservable;
-import rx.schedulers.Schedulers;
 
 import java.nio.file.Path;
 
@@ -29,13 +28,9 @@ public class PathWatcherService {
     }
 
     public void watch(@NotNull final PathNode pathNode, @NotNull final Action1<Path> subscriber) {
-        try (AsyncPathWatcher asyncPathWatcher = asyncPathWatcherFactory.create()) {
-            ConnectableObservable<Path> connectableObservable = nodePayloadObservableFactory.createWithWatcher(pathNode, asyncPathWatcher);
-            connectableObservable.subscribeOn(Schedulers.io());
-            connectableObservable.subscribe(subscriber);
-            connectableObservable.connect();
-        } catch (Exception e) {
-            throw new PathWatcherServiceFailed(e.getMessage(), e);
-        }
+//        AsyncPathWatcher asyncPathWatcher = asyncPathWatcherFactory.create();
+//        ConnectableObservable<Path> connectableObservable = nodePayloadObservableFactory.createWithWatcher(pathNode, asyncPathWatcher);
+//        connectableObservable.subscribe(subscriber);
+//        connectableObservable.connect();
     }
 }

@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.WatchService;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.Is.is;
@@ -22,9 +24,9 @@ public class AsyncPathWatcherFactoryTest {
         when(fileSystem.newWatchService()).thenReturn(mock(WatchService.class));
 
         AsyncPathWatcherFactory pathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
-        PayloadWatcher<Path> pathWatcher = pathWatcherFactory.create();
+        PayloadWatcher<Path> pathWatcher = pathWatcherFactory.create(new ConcurrentHashMap<>(), new LinkedBlockingQueue<>());
 
-        assertThat(pathWatcher, is(not(pathWatcherFactory.create())));
+        assertThat(pathWatcher, is(not(pathWatcherFactory.create(new ConcurrentHashMap<>(), new LinkedBlockingQueue<>()))));
     }
 
     @Test(expected = CouldNotCreatePayloadWatcher.class)
@@ -33,6 +35,6 @@ public class AsyncPathWatcherFactoryTest {
         doThrow(IOException.class).when(fileSystem).newWatchService();
         AsyncPathWatcherFactory pathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
 
-        pathWatcherFactory.create();
+        pathWatcherFactory.create(new ConcurrentHashMap<>(), new LinkedBlockingQueue<>());
     }
 }

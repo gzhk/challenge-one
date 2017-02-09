@@ -23,28 +23,6 @@ import static org.mockito.Mockito.*;
 
 public class PathWatcherServiceTest {
 
-    @Test(expected = PathWatcherServiceFailed.class)
-    public void wrapsExceptionWhenTryingToCloseAsyncPathWatcher() throws Exception {
-        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
-
-        Path path = fileSystem.getPath("/tmp");
-        Files.createDirectories(path);
-
-        PathNode pathNode = new PathNode(path);
-        NodePayloadObservableFactory nodePayloadObservableFactory = mock(NodePayloadObservableFactory.class);
-        ConnectableObservable connectableObservable = mock(ConnectableObservable.class);
-
-        AsyncPathWatcherFactory asyncPathWatcherFactory = mock(AsyncPathWatcherFactory.class);
-        AsyncPathWatcher asyncPathWatcher = mock(AsyncPathWatcher.class);
-        when(asyncPathWatcherFactory.create()).thenReturn(asyncPathWatcher);
-        doThrow(Exception.class).when(asyncPathWatcher).close();
-
-        when(nodePayloadObservableFactory.createWithWatcher(eq(pathNode), any(PayloadWatcher.class))).thenReturn(connectableObservable);
-        PathWatcherService pathWatcherService = new PathWatcherService(asyncPathWatcherFactory, nodePayloadObservableFactory);
-
-        pathWatcherService.watch(pathNode, o -> {});
-    }
-
     @Test
     public void sendsItemsFromStreamThroughWebSockets() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());

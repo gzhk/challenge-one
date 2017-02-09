@@ -1,5 +1,6 @@
 package com.gft.application.config;
 
+import com.gft.application.file.model.PathViewFactory;
 import com.gft.application.file.watcher.PathWatcherService;
 import com.gft.application.file.watcher.PathWatcherTask;
 import com.gft.node.NodePayloadIterableFactory;
@@ -56,9 +57,10 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
     protected PathWatcherTask pathWatcherTask(
         @Value("${dir}") String path,
         PathWatcherService pathWatcherService,
-        SimpMessagingTemplate simpMessagingTemplate
+        SimpMessagingTemplate simpMessagingTemplate,
+        PathViewFactory pathViewFactory
     ) {
-        PathWatcherTask task = new PathWatcherTask(pathWatcherService, simpMessagingTemplate);
+        PathWatcherTask task = new PathWatcherTask(pathWatcherService, simpMessagingTemplate, pathViewFactory);
         task.watchAndSend(Paths.get(path));
 
         return task;

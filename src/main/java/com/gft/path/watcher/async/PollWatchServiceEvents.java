@@ -1,4 +1,4 @@
-package com.gft.path.watcher;
+package com.gft.path.watcher.async;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -11,13 +11,13 @@ import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
-public final class PollWatchServiceEvents implements Runnable {
+final class PollWatchServiceEvents implements Runnable {
 
     private final WatchService watchService;
     private final Map<WatchKey, Path> keys;
     private final BlockingQueue<Path> pathQueue;
 
-    public PollWatchServiceEvents(
+    PollWatchServiceEvents(
         @NotNull final WatchService watchService,
         @NotNull final ConcurrentMap<WatchKey, Path> keys,
         @NotNull final BlockingQueue<Path> pathQueue

@@ -14,12 +14,12 @@ public final class QueuePayloadWatcher<T> implements PayloadWatcher<T> {
     }
 
     @Override
-    public void call(final T payload) {
-        queue.add(payload);
+    public Iterator<T> iterator() {
+        return queue.iterator();
     }
 
     @Override
-    public Iterator<T> iterator() {
-        return queue.iterator();
+    public void call(final T payload) {
+        queue.add(payload);
     }
 }
