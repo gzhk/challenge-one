@@ -5,7 +5,6 @@ import com.gft.application.file.watcher.PathWatcherService;
 import com.gft.application.file.watcher.PathWatcherTask;
 import com.gft.node.NodePayloadIterableFactory;
 import com.gft.node.NodePayloadIteratorObservableFactory;
-import com.gft.path.watcher.async.AsyncPathWatcherFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,10 +35,10 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
             .withSockJS();
     }
 
-    @Bean
-    public AsyncPathWatcherFactory asyncPathWatcherFactory() {
-        return new AsyncPathWatcherFactory(FileSystems.getDefault());
-    }
+//    @Bean
+//    public AsyncPathWatcherFactory asyncPathWatcherFactory() {
+//        return new AsyncPathWatcherFactory(FileSystems.getDefault());
+//    }
 
     @Bean
     public NodePayloadIterableFactory nodePayloadIterableFactory() {

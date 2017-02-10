@@ -1,4 +1,4 @@
-package com.gft.path.watcher.async;
+package com.gft.path;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +46,7 @@ final class PollWatchServiceEvents implements Runnable {
                 .map(e -> ((WatchEvent<Path>) e).context())
                 .forEach(path -> {
                     try {
-                        Files.walkFileTree(dir.resolve(path), new RegisterPaths(dir, pathQueue));
+                        Files.walk(dir.resolve(path)).forEach(pathQueue::add);
                     } catch (IOException e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }
@@ -56,39 +56,6 @@ final class PollWatchServiceEvents implements Runnable {
 
             if (!valid) {
                 break;
-            }
-        }
-    }
-
-    private static class RegisterPaths extends SimpleFileVisitor<Path> {
-
-        private final Path rootPath;
-        private final BlockingQueue<Path> pathQueue;
-
-        RegisterPaths(@NotNull final Path rootPath, @NotNull final BlockingQueue<Path> pathQueue) {
-            this.rootPath = rootPath;
-            this.pathQueue = pathQueue;
-        }
-
-        @Override
-        public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-            registerPath(rootPath.resolve(dir));
-
-            return super.preVisitDirectory(dir, attrs);
-        }
-
-        @Override
-        public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-            registerPath(rootPath.resolve(file));
-
-            return super.visitFile(file, attrs);
-        }
-
-        private void registerPath(Path path) {
-            try {
-                pathQueue.put(path);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
         }
     }

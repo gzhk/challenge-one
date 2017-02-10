@@ -1,6 +1,6 @@
 package com.gft.node;
 
-import com.gft.node.watcher.PayloadWatcher;
+import com.gft.node.watcher.PayloadRegistry;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
@@ -24,14 +24,14 @@ public final class NodePayloadIteratorObservableFactory implements NodePayloadOb
     @Override
     public <T> ConnectableObservable<T> createWithWatcher(
         @NotNull final Node<T> node,
-        @NotNull final PayloadWatcher<T> payloadWatcher
+        @NotNull final PayloadRegistry<T> payloadRegistry
     ) {
         ConnectableObservable<T> observable = Observable.from(nodePayloadIterableFactory.createForNode(node))
-            .mergeWith(Observable.from(payloadWatcher))
+            .mergeWith(payloadRegistry.changes())
             .subscribeOn(Schedulers.newThread())
             .publish();
 
-        observable.subscribe(payloadWatcher);
+        observable.subscribe(payloadRegistry::registerPayload);
 
         return observable;
     }
