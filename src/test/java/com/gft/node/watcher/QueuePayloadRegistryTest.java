@@ -14,7 +14,7 @@ public class QueuePayloadRegistryTest {
     @Test
     public void addsPayloadToTheQueue() throws Exception {
         List<String> list = new ArrayList<>();
-        PayloadRegistry<String> payloadRegistry = new QueuePayloadRegistry<>(list);
+        PayloadRegistry<String> payloadRegistry = new QueuePayloadRegistry<>(list, new ArrayList<>());
 
         payloadRegistry.registerPayload("payload");
 
@@ -24,10 +24,11 @@ public class QueuePayloadRegistryTest {
     @Test
     public void returnsChangesObservableWithRegisteredChanges() throws Exception {
         List<String> list = new ArrayList<>();
-        PayloadRegistry<String> payloadRegistry = new QueuePayloadRegistry<>(list);
+        list.add("payload");
+        list.add("payload2");
 
-        payloadRegistry.registerPayload("payload");
-        payloadRegistry.registerPayload("payload2");
+        PayloadRegistry<String> payloadRegistry = new QueuePayloadRegistry<>(new ArrayList<>(), list);
+
 
         ArrayList<String> emittedStrings = new ArrayList<>();
 

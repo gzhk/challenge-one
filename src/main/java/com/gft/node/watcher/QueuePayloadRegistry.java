@@ -14,9 +14,11 @@ import java.util.List;
 public final class QueuePayloadRegistry<T> implements PayloadRegistry<T> {
 
     private final List<T> list;
+    private final List<T> changes;
 
-    public QueuePayloadRegistry(@NotNull final List<T> list) {
+    public QueuePayloadRegistry(@NotNull final List<T> list, @NotNull final List<T> changes) {
         this.list = list;
+        this.changes = changes;
     }
 
     @Override
@@ -26,6 +28,6 @@ public final class QueuePayloadRegistry<T> implements PayloadRegistry<T> {
 
     @Override
     public Observable<T> changes() {
-        return Observable.from(list);
+        return Observable.from(changes);
     }
 }
