@@ -3,11 +3,13 @@ package com.gft.application.file.watcher;
 import com.gft.node.NodePayloadIterableFactory;
 import com.gft.node.NodePayloadIteratorObservableFactory;
 import com.gft.path.PathNode;
-import com.gft.path.watcher.async.AsyncPathWatcherFactory;
+import com.gft.path.WatchServicePayloadRegistry;
+import com.gft.path.WatchServicePayloadRegistryFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import org.junit.Test;
+import rx.Observer;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
@@ -26,8 +28,8 @@ public final class PathWatcherIntegrationTest {
         NodePayloadIteratorObservableFactory nodePayloadObservableFactory = new NodePayloadIteratorObservableFactory(
             new NodePayloadIterableFactory()
         );
-        AsyncPathWatcherFactory asyncPathWatcherFactory = new AsyncPathWatcherFactory(fileSystem);
-        PathWatcherService pathWatcherService = new PathWatcherService(asyncPathWatcherFactory, nodePayloadObservableFactory);
+        WatchServicePayloadRegistryFactory payloadRegistryFactory = new WatchServicePayloadRegistryFactory(fileSystem);
+        PathWatcherService pathWatcherService = new PathWatcherService(payloadRegistryFactory, nodePayloadObservableFactory);
 
         Path root = fileSystem.getPath("/tmp");
         Files.createDirectories(root);
@@ -40,7 +42,22 @@ public final class PathWatcherIntegrationTest {
 
         ConcurrentLinkedQueue<Path> paths = new ConcurrentLinkedQueue<>();
 
-        pathWatcherService.watch(new PathNode(root), paths::add);
+        pathWatcherService.watch(new PathNode(root), new Observer<Path>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(final Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(final Path path) {
+                paths.add(path);
+            }
+        });
 
         while (paths.size() < 3) {
             // wait until existing directories are emitted

@@ -1,12 +1,13 @@
 package com.gft.node;
 
-import com.gft.node.watcher.PayloadWatcher;
-import com.gft.node.watcher.QueuePayloadWatcher;
+import com.gft.node.watcher.PayloadRegistry;
+import com.gft.node.watcher.QueuePayloadRegistry;
 import org.junit.Test;
 import rx.observables.ConnectableObservable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertThat;
@@ -30,7 +31,7 @@ public class NodePayloadIteratorObservableFactoryTest {
         observable.connect();
 
         while (emittedElements.size() < 3) {
-            // wait for payloads to appear
+            // wait for payloads to appear otherwise timeout will fail this test
         }
 
         assertThat(emittedElements, hasItems("root", "root_leaf1", "root_leaf2"));
@@ -42,17 +43,17 @@ public class NodePayloadIteratorObservableFactoryTest {
 
         NodePayloadObservableFactory nodePayloadObservableFactory = new NodePayloadIteratorObservableFactory(new NodePayloadIterableFactory());
 
-        PayloadWatcher<String> payloadWatcher = new QueuePayloadWatcher<>(new LinkedBlockingQueue<>());
+        PayloadRegistry<String> payloadWatcher = new QueuePayloadRegistry<>(new ArrayList<>(), Collections.singletonList("observed change"));
         ConnectableObservable<String> observable = nodePayloadObservableFactory.createWithWatcher(rootNode, payloadWatcher);
 
         ConcurrentLinkedQueue<String> emittedElements = new ConcurrentLinkedQueue<>();
-        observable.limit(2).subscribe(emittedElements::add);
+        observable.subscribe(emittedElements::add);
         observable.connect();
 
         while (emittedElements.size() < 2) {
             // wait for payloads to appear
         }
 
-        assertThat(emittedElements, hasItems("root", "root"));
+        assertThat(emittedElements, hasItems("root", "observed change"));
     }
 }

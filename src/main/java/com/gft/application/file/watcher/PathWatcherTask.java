@@ -1,31 +1,24 @@
 package com.gft.application.file.watcher;
 
-import com.gft.application.file.model.PathViewFactory;
 import com.gft.path.PathNode;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.nio.file.Path;
 
 public final class PathWatcherTask {
 
     private final PathWatcherService pathWatcherService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
-    private final PathViewFactory pathViewFactory;
+    private final SendPathViewObserver pathObserver;
 
     public PathWatcherTask(
         @NotNull final PathWatcherService pathWatcherService,
-        @NotNull final SimpMessagingTemplate simpMessagingTemplate,
-        @NotNull final PathViewFactory pathViewFactory
+        @NotNull final SendPathViewObserver pathObserver
     ) {
         this.pathWatcherService = pathWatcherService;
-        this.simpMessagingTemplate = simpMessagingTemplate;
-        this.pathViewFactory = pathViewFactory;
+        this.pathObserver = pathObserver;
     }
 
     public void watchAndSend(Path path) {
-        pathWatcherService.watch(new PathNode(path), emittedPath -> {
-            simpMessagingTemplate.convertAndSend("/topic/new-path", pathViewFactory.createFrom(emittedPath));
-        });
+        pathWatcherService.watch(new PathNode(path), pathObserver);
     }
 }

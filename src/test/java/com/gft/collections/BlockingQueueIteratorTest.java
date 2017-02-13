@@ -1,6 +1,5 @@
 package com.gft.collections;
 
-import com.gft.collections.BlockingQueueIterator;
 import org.junit.Test;
 
 import java.nio.file.Path;

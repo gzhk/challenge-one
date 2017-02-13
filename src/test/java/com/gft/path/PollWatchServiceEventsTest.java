@@ -1,4 +1,4 @@
-package com.gft.path.watcher.async;
+package com.gft.path;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;
@@ -106,6 +106,7 @@ public class PollWatchServiceEventsTest {
     }
 
     @Test(expected = RuntimeException.class)
+    @SuppressWarnings("unchecked")
     public void wrapsIOExceptionInRuntimeException() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.windows());
         Path rootPath = fileSystem.getPath("C:\\root");

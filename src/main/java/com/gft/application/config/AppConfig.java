@@ -1,21 +1,18 @@
 package com.gft.application.config;
 
-import com.gft.application.file.model.PathViewFactory;
 import com.gft.application.file.watcher.PathWatcherService;
 import com.gft.application.file.watcher.PathWatcherTask;
+import com.gft.application.file.watcher.SendPathViewObserver;
 import com.gft.node.NodePayloadIterableFactory;
 import com.gft.node.NodePayloadIteratorObservableFactory;
-import com.gft.path.watcher.async.AsyncPathWatcherFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
-import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 
 @Configuration
@@ -37,11 +34,6 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
     }
 
     @Bean
-    public AsyncPathWatcherFactory asyncPathWatcherFactory() {
-        return new AsyncPathWatcherFactory(FileSystems.getDefault());
-    }
-
-    @Bean
     public NodePayloadIterableFactory nodePayloadIterableFactory() {
         return new NodePayloadIterableFactory();
     }
@@ -57,10 +49,9 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
     protected PathWatcherTask pathWatcherTask(
         @Value("${dir}") String path,
         PathWatcherService pathWatcherService,
-        SimpMessagingTemplate simpMessagingTemplate,
-        PathViewFactory pathViewFactory
+        SendPathViewObserver sendPathViewObserver
     ) {
-        PathWatcherTask task = new PathWatcherTask(pathWatcherService, simpMessagingTemplate, pathViewFactory);
+        PathWatcherTask task = new PathWatcherTask(pathWatcherService, sendPathViewObserver);
         task.watchAndSend(Paths.get(path));
 
         return task;
