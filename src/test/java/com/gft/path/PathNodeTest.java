@@ -1,7 +1,5 @@
 package com.gft.path;
 
-import com.gft.node.CannotRetrieveChildren;
-import com.gft.path.PathNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;

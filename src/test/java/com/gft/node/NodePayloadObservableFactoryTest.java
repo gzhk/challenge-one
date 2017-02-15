@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertThat;
 
-public class NodePayloadIteratorObservableFactoryTest {
+public class NodePayloadObservableFactoryTest {
 
     @Test(timeout = 1000)
     public void createsObservableWithPathsPayload() throws Exception {
@@ -23,7 +23,7 @@ public class NodePayloadIteratorObservableFactoryTest {
         rootNode.addChild(rootLeaf1);
         rootNode.addChild(rootLeaf2);
 
-        NodePayloadObservableFactory nodePayloadObservableFactory = new NodePayloadIteratorObservableFactory(new NodePayloadIterableFactory());
+        NodePayloadObservableFactory nodePayloadObservableFactory = new NodePayloadObservableFactory(new NodePayloadIterableFactory());
         ConnectableObservable<String> observable = nodePayloadObservableFactory.createForNode(rootNode);
 
         ConcurrentLinkedQueue<String> emittedElements = new ConcurrentLinkedQueue<>();
@@ -41,10 +41,10 @@ public class NodePayloadIteratorObservableFactoryTest {
     public void createsObservableWhichEmitsChangesFromPayloadWatcher() throws Exception {
         SimpleNode<String> rootNode = new SimpleNode<>("root");
 
-        NodePayloadObservableFactory nodePayloadObservableFactory = new NodePayloadIteratorObservableFactory(new NodePayloadIterableFactory());
+        NodePayloadObservableFactory nodePayloadObservableFactory = new NodePayloadObservableFactory(new NodePayloadIterableFactory());
 
         PayloadRegistry<String> payloadWatcher = new QueuePayloadRegistry<>(new ArrayList<>(), Collections.singletonList("observed change"));
-        ConnectableObservable<String> observable = nodePayloadObservableFactory.createWithWatcher(rootNode, payloadWatcher);
+        ConnectableObservable<String> observable = nodePayloadObservableFactory.createWithIncludedChanges(rootNode, payloadWatcher);
 
         ConcurrentLinkedQueue<String> emittedElements = new ConcurrentLinkedQueue<>();
         observable.subscribe(emittedElements::add);

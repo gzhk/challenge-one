@@ -15,7 +15,6 @@ import java.nio.file.Path;
 public final class PathWatcherController {
 
     private final Path dir;
-    @NotNull
     private final SendPathViewObserver sendPathViewObserver;
     private final NodePayloadObservableFactory nodePayloadObservableFactory;
 
@@ -29,7 +28,6 @@ public final class PathWatcherController {
         this.sendPathViewObserver = sendPathViewObserver;
         this.nodePayloadObservableFactory = nodePayloadObservableFactory;
     }
-
 
     @MessageMapping("/current-paths")
     public void currentPaths() {

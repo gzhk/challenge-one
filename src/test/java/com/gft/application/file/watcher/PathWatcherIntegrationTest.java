@@ -1,9 +1,8 @@
 package com.gft.application.file.watcher;
 
 import com.gft.node.NodePayloadIterableFactory;
-import com.gft.node.NodePayloadIteratorObservableFactory;
+import com.gft.node.NodePayloadObservableFactory;
 import com.gft.path.PathNode;
-import com.gft.path.WatchServicePayloadRegistry;
 import com.gft.path.WatchServicePayloadRegistryFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;
@@ -25,7 +24,7 @@ public final class PathWatcherIntegrationTest {
     @Test(timeout = 10000)
     public void emitsPathsAndRegisteredChanges() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
-        NodePayloadIteratorObservableFactory nodePayloadObservableFactory = new NodePayloadIteratorObservableFactory(
+        NodePayloadObservableFactory nodePayloadObservableFactory = new NodePayloadObservableFactory(
             new NodePayloadIterableFactory()
         );
         WatchServicePayloadRegistryFactory payloadRegistryFactory = new WatchServicePayloadRegistryFactory(fileSystem);

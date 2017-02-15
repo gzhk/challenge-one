@@ -110,6 +110,9 @@
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+                    <excludes>
+                        <exclude>com/gft/application/config/**</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

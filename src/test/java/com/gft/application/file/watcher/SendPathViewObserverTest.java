@@ -2,12 +2,11 @@ package com.gft.application.file.watcher;
 
 import com.gft.application.file.model.PathViewFactory;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.mockito.Mockito.*;
 
@@ -47,8 +46,8 @@ public class SendPathViewObserverTest {
         Exception exception = new Exception("some message");
         sendPathViewObserver.onError(exception);
 
-        verify(logger, times(1)).log(Level.WARNING, "some message");
-        verify(logger, times(1)).log(Level.WARNING, Arrays.toString(exception.getStackTrace()));
+        verify(logger, times(1)).error("some message");
+        verify(logger, times(1)).error(Arrays.toString(exception.getStackTrace()));
 
         verifyZeroInteractions(simpMessagingTemplate);
     }

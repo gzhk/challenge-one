@@ -1,5 +1,6 @@
 package com.gft.application.file.add;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -18,23 +19,24 @@ import java.util.Arrays;
 public final class AddFileAction {
 
     private final String directory;
+    private final PathUtils pathUtils;
 
     @Autowired
-    public AddFileAction(@Value("${dir}") final String directory) {
+    public AddFileAction(@Value("${dir}") final String directory, @NotNull final PathUtils pathUtils) {
         this.directory = directory;
+        this.pathUtils = pathUtils;
     }
 
     @GetMapping("/addFile")
     public ResponseEntity<String> invoke(@RequestParam String name) {
         Path path = Paths.get(directory + "/" + name);
 
-        if (Files.exists(path)) {
+        if (pathUtils.exists(path)) {
             return ResponseEntity.ok("File already exists.");
         }
 
         try {
-            path.toFile().getParentFile().mkdirs();
-            Files.write(path, Arrays.asList(""), Charset.forName("UTF-8"));
+            pathUtils.createFile(path);
         } catch (IOException e) {
             return ResponseEntity.ok(e.toString());
         }

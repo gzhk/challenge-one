@@ -2,16 +2,13 @@ package com.gft.application.file.watcher;
 
 import com.gft.application.file.model.PathViewFactory;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Component;
 import rx.Observer;
 
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-@Component
 public class SendPathViewObserver implements Observer<Path> {
 
     private final PathViewFactory pathViewFactory;
@@ -35,8 +32,8 @@ public class SendPathViewObserver implements Observer<Path> {
 
     @Override
     public void onError(final Throwable e) {
-        logger.log(Level.WARNING, e.getMessage());
-        logger.log(Level.WARNING, Arrays.toString(e.getStackTrace()));
+        logger.error(e.getMessage());
+        logger.error(Arrays.toString(e.getStackTrace()));
     }
 
     @Override
