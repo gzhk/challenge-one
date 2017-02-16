@@ -8,7 +8,8 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class PathUtilsTest {
 
@@ -29,5 +30,17 @@ public class PathUtilsTest {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
         assertFalse(pathUtils.exists(fileSystem.getPath("/tmp")));
+    }
+
+    @Test
+    public void createsPath() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        Path path = fileSystem.getPath("/tmp/file.txt");
+
+        PathUtils pathUtils = new PathUtils();
+
+        assertFalse(pathUtils.exists(path));
+        pathUtils.createFile(path);
+        assertTrue(pathUtils.exists(path));
     }
 }

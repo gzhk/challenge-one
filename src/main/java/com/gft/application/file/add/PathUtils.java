@@ -17,7 +17,7 @@ public class PathUtils {
     }
 
     public void createFile(@NotNull final Path path) throws IOException {
-        Files.createDirectories(path);
+        Files.createDirectories(path.getParent());
         Files.write(path, Collections.singletonList(""), Charset.forName("UTF-8"));
     }
 }

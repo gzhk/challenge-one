@@ -112,6 +112,7 @@
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
                     <excludes>
                         <exclude>com/gft/application/config/**</exclude>
+                        <exclude>com/gft/ChallengeOneApplication</exclude>
                     </excludes>
                 </configuration>
                 <executions>

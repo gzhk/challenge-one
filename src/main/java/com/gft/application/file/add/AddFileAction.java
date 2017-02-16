@@ -9,27 +9,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 @RestController
 public final class AddFileAction {
 
-    private final String directory;
+    private final Path directory;
     private final PathUtils pathUtils;
 
     @Autowired
-    public AddFileAction(@Value("${dir}") final String directory, @NotNull final PathUtils pathUtils) {
+    public AddFileAction(@Value("${dir}") final Path directory, @NotNull final PathUtils pathUtils) {
         this.directory = directory;
         this.pathUtils = pathUtils;
     }
 
     @GetMapping("/addFile")
-    public ResponseEntity<String> invoke(@RequestParam String name) {
-        Path path = Paths.get(directory + "/" + name);
+    public ResponseEntity<String> invoke(@RequestParam(name = "name") Path path) {
+        path = directory.resolve(path);
 
         if (pathUtils.exists(path)) {
             return ResponseEntity.ok("File already exists.");
@@ -38,7 +35,7 @@ public final class AddFileAction {
         try {
             pathUtils.createFile(path);
         } catch (IOException e) {
-            return ResponseEntity.ok(e.toString());
+            return ResponseEntity.ok(e.toString() + "\n" + Arrays.toString(e.getStackTrace()));
         }
 
         return ResponseEntity.ok("File created.");
