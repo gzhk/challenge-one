@@ -8,8 +8,8 @@ public final class PathView {
     public final String parentId;
     public final String name;
 
-    public PathView(final String name, final String parentId, final String path) {
-        this.id = name;
+    public PathView(final String id, final String parentId, final String path) {
+        this.id = id;
         this.parentId = parentId;
         this.name = path;
     }
