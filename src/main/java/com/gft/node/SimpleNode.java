@@ -10,21 +10,25 @@ import java.util.Objects;
 public final class SimpleNode<P> implements Node<P> {
 
     private final P payload;
-    private final List<Node<P>> children = new ArrayList<>();
+    private final List<Node<P>> children;
 
     public SimpleNode(@NotNull final P payload) {
         this.payload = payload;
+        this.children = new ArrayList<>();
     }
 
-    public void addChild(@NotNull Node<P> simpleNode) {
-        children.add(simpleNode);
+    public SimpleNode(@NotNull final P payload, @NotNull final List<Node<P>> children) {
+        this.payload = payload;
+        this.children = children;
     }
 
+    @NotNull
     @Override
-    public Collection<Node<P>> children() throws CannotRetrieveChildren {
+    public Collection<Node<P>> children() {
         return new ArrayList<>(children);
     }
 
+    @NotNull
     @Override
     public P getPayload() {
         return payload;

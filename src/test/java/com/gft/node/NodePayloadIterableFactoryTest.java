@@ -11,6 +11,6 @@ public class NodePayloadIterableFactoryTest {
         NodePayloadIterableFactory nodePayloadIterableFactory = new NodePayloadIterableFactory();
         Iterable<String> iterable = nodePayloadIterableFactory.createForNode(new SimpleNode<>("root"));
 
-        assertTrue(iterable.iterator() instanceof BreadthFirstSearchNodeIterator);
+        assertTrue(iterable.iterator() instanceof NodePayloadIterator);
     }
 }

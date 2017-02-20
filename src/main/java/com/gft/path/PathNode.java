@@ -20,8 +20,9 @@ public final class PathNode implements Node<Path> {
         this.path = path;
     }
 
+    @NotNull
     @Override
-    public Collection<Node<Path>> children() throws CannotRetrieveChildren {
+    public Collection<Node<Path>> children() {
         if (Files.isDirectory(path)) {
             try {
                 return Files.list(path).map(PathNode::new).collect(Collectors.toList());
@@ -33,6 +34,7 @@ public final class PathNode implements Node<Path> {
         return new ArrayList<>();
     }
 
+    @NotNull
     @Override
     public Path getPayload() {
         return path;

@@ -1,6 +1,5 @@
 package com.gft.node;
 
-import com.gft.node.watcher.PayloadRegistry;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
@@ -14,23 +13,12 @@ public class NodePayloadObservableFactory {
         this.nodePayloadIterableFactory = nodePayloadIterableFactory;
     }
 
-    public <T> ConnectableObservable<T> createForNode(@NotNull final Node<T> node) {
-        return Observable.from(nodePayloadIterableFactory.createForNode(node))
-            .subscribeOn(Schedulers.newThread())
-            .publish();
-    }
-
-    public <T> ConnectableObservable<T> createWithIncludedChanges(
-        @NotNull final Node<T> node,
-        @NotNull final PayloadRegistry<T> payloadRegistry
-    ) {
-        ConnectableObservable<T> observable = Observable.from(nodePayloadIterableFactory.createForNode(node))
-            .mergeWith(payloadRegistry.changes())
-            .subscribeOn(Schedulers.newThread())
-            .publish();
-
-        observable.subscribe(payloadRegistry::registerPayload);
-
-        return observable;
+    /**
+     * @param rootNode Root node of tree structure.
+     * @param <T> Type of the node payload.
+     * @return ConnectableObservable witch emits children from tree structure for given root node.
+     */
+    public <T> ConnectableObservable<T> create(@NotNull final Node<T> rootNode) {
+        return Observable.from(nodePayloadIterableFactory.createForNode(rootNode)).publish();
     }
 }

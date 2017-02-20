@@ -3,6 +3,7 @@ package com.gft.node;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -19,19 +20,15 @@ public class SimpleNodeTest {
 
     @Test
     public void addsAndReturnsChildren() throws Exception {
-        SimpleNode<String> simpleNode = new SimpleNode<>("root");
         SimpleNode<String> child = new SimpleNode<>("child");
-        simpleNode.addChild(child);
+        SimpleNode<String> simpleNode = new SimpleNode<>("root", Collections.singletonList(child));
 
-        ArrayList<SimpleNode> expected = new ArrayList<>();
-        expected.add(child);
-
-        assertThat(simpleNode.children(), is(expected));
+        assertThat(simpleNode.children(), is(Collections.singletonList(child)));
     }
 
     @Test
     public void returnsTrueIfPayloadIsEqual() throws Exception {
-        assertThat(new SimpleNode<>("root"), is(new SimpleNode<>("root")));
+        assertThat(new SimpleNode<>("root", new ArrayList<>()), is(new SimpleNode<>("root")));
     }
 
     @Test

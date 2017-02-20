@@ -17,7 +17,7 @@ public class PathWatcherControllerTest {
         NodePayloadObservableFactory observableFactory = mock(NodePayloadObservableFactory.class);
         Path path = mock(Path.class);
         ConnectableObservable<Path> connectableObservable = Observable.just(path).publish();
-        when(observableFactory.createForNode(new PathNode(path))).thenReturn(connectableObservable);
+        when(observableFactory.create(new PathNode(path))).thenReturn(connectableObservable);
 
         SendPathViewObserver sendPathViewObserver = mock(SendPathViewObserver.class);
 

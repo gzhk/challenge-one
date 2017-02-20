@@ -31,7 +31,7 @@ public final class PathWatcherController {
 
     @MessageMapping("/current-paths")
     public void currentPaths() {
-        ConnectableObservable<Path> connectableObservable = nodePayloadObservableFactory.createForNode(new PathNode(dir));
+        ConnectableObservable<Path> connectableObservable = nodePayloadObservableFactory.create(new PathNode(dir));
         connectableObservable.subscribe(sendPathViewObserver);
         connectableObservable.connect();
     }
