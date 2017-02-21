@@ -7,14 +7,19 @@ import rx.Subscriber;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
 
     private final Path rootDir;
     private final WatchService watchService;
+    private final Map<WatchKey, Path> keys = new HashMap<>();
+
 
     public WatchPathOnSubscribe(@NotNull final Path rootDir, @NotNull final WatchService watchService) {
         this.rootDir = rootDir;
@@ -23,13 +28,7 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
 
     @Override
     public void call(final Subscriber<? super Path> subscriber) {
-        Asd asd = new Asd(watchService, subscriber);
-
-        try {
-            asd.register(rootDir);
-        } catch (IOException e) {
-            return;
-        }
+        watchChangesRecursive(rootDir);
 
         while (true) {
             final WatchKey watchKey;
@@ -40,21 +39,19 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
                 return;
             }
 
-            for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
-                final WatchEvent<Path> pathWatchEvent = (WatchEvent<Path>) watchEvent;
-                final Path newPath = rootDir.resolve(pathWatchEvent.context());
-
-                try {
-                    asd.register(newPath);
-                    Iterator<Path> pathIterator = Files.walk(newPath).iterator();
-
-                    while (pathIterator.hasNext()) {
-                        asd.register(pathIterator.next());
+            watchKey.pollEvents()
+                .stream()
+                .filter(watchEvent -> watchEvent.kind() != OVERFLOW)
+                .map(watchEvent -> ((WatchEvent<Path>) watchEvent).context())
+                .map(path -> keys.get(watchKey).resolve(path))
+                .forEach(path -> {
+                    watchChangesRecursive(path);
+                    try {
+                        Files.walk(path).forEach(subscriber::onNext);
+                    } catch (IOException e) {
+                        subscriber.onError(e);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+                });
 
             boolean valid = watchKey.reset();
 
@@ -64,19 +61,17 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
         }
     }
 
-    private static final class Asd {
+    private void watchChangesRecursive(@NotNull final Path rootPath) {
+        try {
+            Iterator<Path> pathIterator = Files.walk(rootPath).iterator();
 
-        private final WatchService watchService;
-        private final Subscriber<? super Path> subscriber;
-
-        public Asd(final WatchService watchService, final Subscriber<? super Path> subscriber) {
-            this.watchService = watchService;
-            this.subscriber = subscriber;
-        }
-
-        public void register(final Path path) throws IOException {
-            path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
-            subscriber.onNext(path);
+            while (pathIterator.hasNext()) {
+                Path path = pathIterator.next();
+                WatchKey watchKey = path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
+                keys.put(watchKey, path);
+            }
+        } catch (IOException e) {
+            throw new WatchPathOnSubscribeException("Could not register path for watching changes." + rootPath, e);
         }
     }
 }

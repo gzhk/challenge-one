@@ -43,14 +43,10 @@ public final class WatchPathOnSubscribeTest {
             });
         });
 
-        while (emittedPaths.size() < 1) {
-        }
+        Thread.sleep(500);
 
         Path rootSubDir = rootDir.resolve("rootSubDir");
         Files.createDirectory(rootSubDir);
-
-        while (emittedPaths.size() < 2) {
-        }
 
         Path level2SubDir = rootSubDir.resolve("level2SubDir/somethingelse");
         Files.createDirectories(level2SubDir);
@@ -58,13 +54,14 @@ public final class WatchPathOnSubscribeTest {
         while (emittedPaths.size() < 3) {
         }
 
+        fileSystem.close();
+
         Assertions
             .assertThat(emittedPaths)
-            .contains(
-                rootDir,
-                rootDir.resolve(rootSubDir),
-                rootDir.resolve(level2SubDir),
-                rootDir.resolve(rootDir.resolve("rootSubDir/level2SubDir/somethingelse"))
+            .containsOnly(
+                rootSubDir,
+                level2SubDir,
+                rootSubDir.resolve("level2SubDir")
             );
     }
 }
