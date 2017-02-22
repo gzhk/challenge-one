@@ -6,6 +6,7 @@ import com.gft.application.file.watcher.PathWatcherTask;
 import com.gft.application.file.watcher.SendPathViewObserver;
 import com.gft.node.NodePayloadIterableFactory;
 import com.gft.node.NodePayloadObservableFactory;
+import com.gft.path.PathUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -64,5 +65,10 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
         task.watchAndSend(Paths.get(path));
 
         return task;
+    }
+
+    @Bean
+    public PathUtils pathUtils() {
+        return new PathUtils();
     }
 }

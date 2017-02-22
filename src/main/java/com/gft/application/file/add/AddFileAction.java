@@ -1,5 +1,6 @@
 package com.gft.application.file.add;
 
+import com.gft.path.PathUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +34,7 @@ public final class AddFileAction {
         }
 
         try {
-            pathUtils.createFile(path);
+            pathUtils.createEmptyFile(path);
         } catch (IOException e) {
             return ResponseEntity.ok(e.toString() + "\n" + Arrays.toString(e.getStackTrace()));
         }

@@ -3,25 +3,29 @@ package com.gft.path;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Test;
 import rx.Subscriber;
 
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.WatchService;
+import java.nio.charset.Charset;
+import java.nio.file.*;
+import java.util.Collections;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 
 public final class WatchPathOnSubscribeTest {
 
-    @Test(timeout = 10000)
-    public void watchesPathForChangesAndEmitsThemToTheSubscriber() throws Exception {
+    @Test(timeout = 20000)
+    public void watchesRootPathRecursiveForNewPathsAndEmitsThemToTheSubscriber() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
         WatchService watchService = fileSystem.newWatchService();
 
         Path rootDir = fileSystem.getPath("/root");
         Files.createDirectory(rootDir);
+
+        Path subDir = rootDir.resolve("existing");
+        Files.createDirectory(subDir);
 
         ConcurrentLinkedQueue<Path> emittedPaths = new ConcurrentLinkedQueue<>();
 
@@ -43,6 +47,7 @@ public final class WatchPathOnSubscribeTest {
             });
         });
 
+        // Wait until root path registers it self in WatchService
         Thread.sleep(500);
 
         Path rootSubDir = rootDir.resolve("rootSubDir");
@@ -51,7 +56,13 @@ public final class WatchPathOnSubscribeTest {
         Path level2SubDir = rootSubDir.resolve("level2SubDir/somethingelse");
         Files.createDirectories(level2SubDir);
 
-        while (emittedPaths.size() < 3) {
+        Path rootFile = rootDir.resolve("file.txt");
+        Files.write(rootFile, Collections.singleton("asd"), Charset.forName("UTF-8"));
+
+        Path subFile = subDir.resolve("file.txt");
+        Files.write(subFile, Collections.singleton("asd"), Charset.forName("UTF-8"));
+
+        while (emittedPaths.size() < 5) {
         }
 
         fileSystem.close();
@@ -61,7 +72,74 @@ public final class WatchPathOnSubscribeTest {
             .containsOnly(
                 rootSubDir,
                 level2SubDir,
-                rootSubDir.resolve("level2SubDir")
+                rootSubDir.resolve("level2SubDir"),
+                rootFile,
+                subFile
             );
+    }
+
+    @Test(timeout = 5000)
+    public void itDoesNotWatchForChangesWhenSubscriberIsUnSubscribed() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        WatchService watchService = fileSystem.newWatchService();
+
+        Path rootDir = fileSystem.getPath("/root");
+        Files.createDirectory(rootDir);
+
+        WatchPathOnSubscribe watchPathOnSubscribe = new WatchPathOnSubscribe(rootDir, watchService);
+
+        Subscriber<Path> subscriber = new Subscriber<Path>() {
+            @Override
+            public void onCompleted() {
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            }
+
+            @Override
+            public void onNext(Path path) {
+            }
+        };
+        subscriber.unsubscribe();
+        watchPathOnSubscribe.call(subscriber);
+
+        fileSystem.close();
+
+        // If we got here, that means WatchService didn't block us, because subscriber is unSubscribed
+        Assert.assertTrue(true);
+    }
+
+    @Test(timeout = 5000)
+    public void callsOnErrorMethod() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        WatchService watchService = fileSystem.newWatchService();
+
+        Path rootDir = fileSystem.getPath("/root");
+        Files.createDirectory(rootDir);
+
+        ArrayBlockingQueue<Throwable> throwables = new ArrayBlockingQueue<>(1);
+
+        Executors.newSingleThreadExecutor().submit(() -> {
+            WatchPathOnSubscribe watchPathOnSubscribe = new WatchPathOnSubscribe(rootDir, watchService);
+            watchPathOnSubscribe.call(new Subscriber<Path>() {
+                @Override
+                public void onCompleted() {
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    throwables.add(e);
+                }
+
+                @Override
+                public void onNext(Path path) {
+                }
+            });
+        });
+
+        fileSystem.close();
+
+        Assertions.assertThat(throwables.take()).isInstanceOfAny(ClosedFileSystemException.class);
     }
 }

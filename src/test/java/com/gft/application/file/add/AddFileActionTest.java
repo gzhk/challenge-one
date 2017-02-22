@@ -1,5 +1,6 @@
 package com.gft.application.file.add;
 
+import com.gft.path.PathUtils;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import edu.emory.mathcs.backport.java.util.Collections;
@@ -67,7 +68,7 @@ public final class AddFileActionTest {
         AddFileAction addFileAction = new AddFileAction(directory, pathUtils);
         Path path = directory.resolve("file.txt");
         IOException ioException = new IOException("Exception message");
-        doThrow(ioException).when(pathUtils).createFile(any());
+        doThrow(ioException).when(pathUtils).createEmptyFile(any());
 
         ResponseEntity<String> responseEntity = addFileAction.invoke(path);
 

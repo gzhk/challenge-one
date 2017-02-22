@@ -1,4 +1,4 @@
-package com.gft.application.file.add;
+package com.gft.path;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
@@ -40,7 +40,7 @@ public class PathUtilsTest {
         PathUtils pathUtils = new PathUtils();
 
         assertFalse(pathUtils.exists(path));
-        pathUtils.createFile(path);
+        pathUtils.createEmptyFile(path);
         assertTrue(pathUtils.exists(path));
     }
 }

@@ -1,4 +1,4 @@
-package com.gft.application.file.add;
+package com.gft.path;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
@@ -9,14 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
-@Component
 public class PathUtils {
 
     public boolean exists(@NotNull final Path path) {
         return Files.exists(path);
     }
 
-    public void createFile(@NotNull final Path path) throws IOException {
+    public void createEmptyFile(@NotNull final Path path) throws IOException {
         Files.createDirectories(path.getParent());
         Files.write(path, Collections.singletonList(""), Charset.forName("UTF-8"));
     }
