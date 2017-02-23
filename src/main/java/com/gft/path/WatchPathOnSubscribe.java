@@ -8,7 +8,6 @@ import rx.Subscriber;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -29,7 +28,7 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
     public void call(final Subscriber<? super Path> subscriber) {
         try {
             final Map<WatchKey, Path> keys = new HashMap<>();
-            watchChangesRecursive(rootDir, keys);
+            keys.putAll(watchChangesRecursive(rootDir, watchService));
 
             while (true) {
                 if (subscriber.isUnsubscribed()) {
@@ -44,39 +43,46 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
                     .map(watchEvent -> ((WatchEvent<Path>) watchEvent).context())
                     .map(path -> keys.get(watchKey).resolve(path))
                     .forEach(path -> {
-                        watchChangesRecursive(path, keys);
-                        visitPathRecursive(path, subscriber::onNext);
+                        keys.putAll(watchChangesRecursive(path, watchService));
+
+                        visitPathRecursive(path, p -> {
+                            if (!subscriber.isUnsubscribed()) {
+                                subscriber.onNext(p);
+                            }
+                        });
                     });
 
-                boolean valid = watchKey.reset();
-
-                if (!valid) {
+                if (!watchKey.reset()) {
                     break;
                 }
             }
         } catch (Exception e) {
-            subscriber.onError(e);
-            return;
+            if (!subscriber.isUnsubscribed()) {
+                subscriber.onError(e);
+                return;
+            }
         }
 
-        subscriber.onCompleted();
+        if (!subscriber.isUnsubscribed()) {
+            subscriber.onCompleted();
+        }
     }
 
-    private void watchChangesRecursive(@NotNull final Path rootPath, @NotNull final Map<WatchKey, Path> keys) {
-        try {
-            Iterator<Path> pathIterator = Files.walk(rootPath).iterator();
+    private Map<WatchKey, Path> watchChangesRecursive(@NotNull final Path rootPath, @NotNull final WatchService watchService) {
+        final Map<WatchKey, Path> keys = new HashMap<>();
 
-            while (pathIterator.hasNext()) {
-                Path path = pathIterator.next();
-
-                if (Files.isDirectory(path)) {
+        visitPathRecursive(rootPath, path -> {
+            if (Files.isDirectory(path)) {
+                try {
                     WatchKey watchKey = path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
                     keys.put(watchKey, path);
+                } catch (IOException e) {
+                    throw new WatchPathOnSubscribeException("Could not register path for watching changes." + rootPath, e);
                 }
             }
-        } catch (IOException e) {
-            throw new WatchPathOnSubscribeException("Could not register path for watching changes." + rootPath, e);
-        }
+        });
+
+        return keys;
     }
 
     private void visitPathRecursive(@NotNull final Path rootPath, @NotNull final Consumer<Path> pathConsumer) {
