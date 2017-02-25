@@ -27,8 +27,7 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
     @Override
     public void call(final Subscriber<? super Path> subscriber) {
         try {
-            final Map<WatchKey, Path> keys = new HashMap<>();
-            keys.putAll(watchChangesRecursive(rootDir, watchService));
+            watchChangesRecursive(rootDir, watchService);
 
             while (true) {
                 if (subscriber.isUnsubscribed()) {
@@ -41,9 +40,9 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
                     .stream()
                     .filter(watchEvent -> watchEvent.kind() != OVERFLOW)
                     .map(watchEvent -> ((WatchEvent<Path>) watchEvent).context())
-                    .map(path -> keys.get(watchKey).resolve(path))
+                    .map(path -> ((Path) watchKey.watchable()).resolve(path))
                     .forEach(path -> {
-                        keys.putAll(watchChangesRecursive(path, watchService));
+                        watchChangesRecursive(path, watchService);
 
                         visitPathRecursive(path, p -> {
                             if (!subscriber.isUnsubscribed()) {
@@ -68,21 +67,16 @@ public final class WatchPathOnSubscribe implements OnSubscribe<Path> {
         }
     }
 
-    private Map<WatchKey, Path> watchChangesRecursive(@NotNull final Path rootPath, @NotNull final WatchService watchService) {
-        final Map<WatchKey, Path> keys = new HashMap<>();
-
+    private void watchChangesRecursive(@NotNull final Path rootPath, @NotNull final WatchService watchService) {
         visitPathRecursive(rootPath, path -> {
             if (Files.isDirectory(path)) {
                 try {
-                    WatchKey watchKey = path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
-                    keys.put(watchKey, path);
+                    path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
                 } catch (IOException e) {
                     throw new WatchPathOnSubscribeException("Could not register path for watching changes." + rootPath, e);
                 }
             }
         });
-
-        return keys;
     }
 
     private void visitPathRecursive(@NotNull final Path rootPath, @NotNull final Consumer<Path> pathConsumer) {
