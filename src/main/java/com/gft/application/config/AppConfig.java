@@ -1,12 +1,12 @@
 package com.gft.application.config;
 
+import com.gft.application.file.add.PathUtils;
 import com.gft.application.file.model.PathViewFactory;
 import com.gft.application.file.watcher.PathWatcherService;
 import com.gft.application.file.watcher.PathWatcherTask;
 import com.gft.application.file.watcher.SendPathViewObserver;
 import com.gft.node.NodePayloadIterableFactory;
 import com.gft.node.NodePayloadObservableFactory;
-import com.gft.path.PathUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +17,6 @@ import org.springframework.web.socket.config.annotation.AbstractWebSocketMessage
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
-import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 
 @Configuration

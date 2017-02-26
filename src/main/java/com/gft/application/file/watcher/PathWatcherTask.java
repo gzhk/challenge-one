@@ -1,6 +1,6 @@
 package com.gft.application.file.watcher;
 
-import com.gft.path.PathNode;
+import com.gft.watchservice.PathNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;

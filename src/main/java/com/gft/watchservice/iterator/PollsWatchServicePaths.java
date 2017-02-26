@@ -1,4 +1,4 @@
-package com.gft.path.iterator;
+package com.gft.watchservice.iterator;
 
 import org.jetbrains.annotations.NotNull;
 

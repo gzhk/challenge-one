@@ -1,7 +1,7 @@
 package com.gft.application.file.watcher;
 
 import com.gft.node.NodePayloadObservableFactory;
-import com.gft.path.PathNode;
+import com.gft.watchservice.PathNode;
 import org.junit.Test;
 import rx.Observable;
 import rx.observables.ConnectableObservable;

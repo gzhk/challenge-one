@@ -1,4 +1,4 @@
-package com.gft.path.iterator;
+package com.gft.watchservice.iterator;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.jetbrains.annotations.NotNull;

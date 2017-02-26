@@ -1,4 +1,4 @@
-package com.gft.path;
+package com.gft.watchservice;
 
 import com.gft.node.CannotRetrieveChildren;
 import com.gft.node.Node;

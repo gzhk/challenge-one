@@ -3,7 +3,6 @@ package com.gft.node;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
-import rx.schedulers.Schedulers;
 
 public class NodePayloadObservableFactory {
 

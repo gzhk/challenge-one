@@ -1,7 +1,7 @@
 package com.gft.application.file.watcher;
 
 import com.gft.node.NodePayloadObservableFactory;
-import com.gft.path.PathNode;
+import com.gft.watchservice.PathNode;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

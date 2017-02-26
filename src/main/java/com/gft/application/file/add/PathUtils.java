@@ -1,7 +1,6 @@
-package com.gft.path;
+package com.gft.application.file.add;
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
