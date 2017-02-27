@@ -13,18 +13,6 @@ import java.util.stream.Collectors;
 public final class RegistersPathsTest {
 
     @Test
-    public void callsCloseMethodFromDecoratedObject() throws Exception {
-        WatchServiceIterator innerWatchServiceIterator = Mockito.mock(WatchServiceIterator.class);
-        WatchService watchService = Mockito.mock(WatchService.class);
-
-        RegistersPaths registersPaths = new RegistersPaths(innerWatchServiceIterator, watchService);
-        registersPaths.close();
-
-        Mockito.verify(innerWatchServiceIterator, Mockito.times(1)).close();
-        Mockito.verify(watchService, Mockito.times(1)).close();
-    }
-
-    @Test
     public void returnsResultFromDecoratedHasNextMethod() throws Exception {
         WatchServiceIterator innerWatchServiceIterator = Mockito.mock(WatchServiceIterator.class);
         WatchService watchService = Mockito.mock(WatchService.class);
@@ -41,10 +29,6 @@ public final class RegistersPathsTest {
         Path path = fileSystem.getPath("/root");
         Files.createDirectory(path);
         WatchServiceIterator innerWatchServiceIterator = new WatchServiceIterator() {
-            @Override
-            public void close() throws Exception {
-            }
-
             @Override
             public boolean hasNext() {
                 return true;

@@ -65,16 +65,4 @@ public final class PollsWatchServicePathsTest {
 
         Assert.assertFalse(pollsWatchServicePaths.hasNext());
     }
-
-    @Test
-    public void closesWatchServiceAndDoesNotHaveNextPaths() throws Exception {
-        WatchService watchService = Mockito.mock(WatchService.class);
-
-        PollsWatchServicePaths pollsWatchServicePaths = new PollsWatchServicePaths(watchService);
-        pollsWatchServicePaths.close();
-
-        verify(watchService, times(1)).close();
-
-        Assert.assertFalse(pollsWatchServicePaths.hasNext());
-    }
 }

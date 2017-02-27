@@ -33,9 +33,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                }
 
                 @Override
                 public boolean hasNext() {
@@ -75,9 +72,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                }
 
                 @Override
                 public boolean hasNext() {
@@ -112,10 +106,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                    throw new Exception("irrelevant exception");
-                }
 
                 @Override
                 public boolean hasNext() {
@@ -148,9 +138,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                }
 
                 @Override
                 public boolean hasNext() {
@@ -183,9 +170,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                }
 
                 @Override
                 public boolean hasNext() {
@@ -230,9 +214,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                }
 
                 @Override
                 public boolean hasNext() {
@@ -272,9 +253,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                }
 
                 @Override
                 public boolean hasNext() {
@@ -301,9 +279,6 @@ public final class OnSubscribeEmitNewPathsTest {
             rootPath,
             () -> fsWatchService,
             watchService -> new WatchServiceIterator() {
-                @Override
-                public void close() throws Exception {
-                }
 
                 @Override
                 public boolean hasNext() {

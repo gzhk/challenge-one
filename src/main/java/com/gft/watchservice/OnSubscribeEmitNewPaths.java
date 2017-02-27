@@ -33,10 +33,10 @@ public final class OnSubscribeEmitNewPaths implements OnSubscribe<Path> {
 
     @Override
     public void call(final Subscriber<? super Path> subscriber) {
-        WatchService watchService = watchServiceFactory.create();
-        registerPathsRecursively(rootPath, watchService);
+        try (WatchService watchService = watchServiceFactory.create()) {
+            registerPathsRecursively(rootPath, watchService);
+            WatchServiceIterator iterator = watchServiceIteratorFactory.create(watchService);
 
-        try (WatchServiceIterator iterator = watchServiceIteratorFactory.create(watchService)) {
             while (iterator.hasNext()) {
                 if (subscriber.isUnsubscribed()) {
                     break;

@@ -35,10 +35,4 @@ public final class RegistersPaths implements WatchServiceIterator {
 
         return path;
     }
-
-    @Override
-    public void close() throws Exception {
-        inner.close();
-        watchService.close();
-    }
 }

@@ -15,31 +15,26 @@ public final class PollsWatchServicePaths implements WatchServiceIterator {
 
     private final WatchService watchService;
     private final Queue<Path> paths = new LinkedList<>();
-    private boolean hasNext = true;
 
     public PollsWatchServicePaths(@NotNull final WatchService watchService) {
         this.watchService = watchService;
+        paths.addAll(pollPaths(watchService));
     }
 
     @Override
     public boolean hasNext() {
-        if (!hasNext) {
-            return false;
-        }
-
-        if (paths.isEmpty()) {
-            paths.addAll(pollPaths(watchService));
-        }
-
-        return hasNext && !paths.isEmpty();
+        return !paths.isEmpty();
     }
 
     @Override
     public Path next() {
-        return paths.remove();
+        Path remove = paths.remove();
+        paths.addAll(pollPaths(watchService));
+
+        return remove;
     }
 
-    private List<Path> pollPaths(final WatchService watchService) {
+    private static List<Path> pollPaths(final WatchService watchService) {
         final WatchKey watchKey;
 
         try {
@@ -63,16 +58,6 @@ public final class PollsWatchServicePaths implements WatchServiceIterator {
                 }
             });
 
-        if (!watchKey.reset()) {
-            hasNext = false;
-        }
-
         return result;
-    }
-
-    @Override
-    public void close() throws Exception {
-        hasNext = false;
-        watchService.close();
     }
 }
