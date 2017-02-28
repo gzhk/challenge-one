@@ -2,7 +2,6 @@ package com.gft.application.config;
 
 import com.gft.application.file.add.PathUtils;
 import com.gft.application.file.model.PathViewFactory;
-import com.gft.application.file.watcher.PathWatcherService;
 import com.gft.application.file.watcher.PathWatcherTask;
 import com.gft.application.file.watcher.SendPathViewObserver;
 import com.gft.node.NodePayloadIterableFactory;
@@ -17,7 +16,10 @@ import org.springframework.web.socket.config.annotation.AbstractWebSocketMessage
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
+import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Paths;
+import java.util.concurrent.Executors;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -56,12 +58,17 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
 
     @Bean
     protected PathWatcherTask pathWatcherTask(
-        @Value("${dir}") String path,
-        PathWatcherService pathWatcherService,
-        SendPathViewObserver sendPathViewObserver
-    ) {
-        PathWatcherTask task = new PathWatcherTask(pathWatcherService, sendPathViewObserver);
-        task.watchAndSend(Paths.get(path));
+        @Value("${dir}") String rootPath,
+        SendPathViewObserver observer,
+        PathUtils pathUtils
+    ) throws IOException {
+        PathWatcherTask task = new PathWatcherTask(
+            observer,
+            FileSystems.getDefault(),
+            pathUtils,
+            Executors.newSingleThreadExecutor()
+        );
+        task.watch(Paths.get(rootPath));
 
         return task;
     }

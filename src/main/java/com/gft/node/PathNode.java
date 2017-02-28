@@ -1,7 +1,5 @@
-package com.gft.watchservice;
+package com.gft.node;
 
-import com.gft.node.CannotRetrieveChildren;
-import com.gft.node.Node;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

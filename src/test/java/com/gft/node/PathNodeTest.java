@@ -1,4 +1,4 @@
-package com.gft.watchservice;
+package com.gft.node;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.jimfs.Configuration;

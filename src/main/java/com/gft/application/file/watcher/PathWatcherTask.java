@@ -1,24 +1,53 @@
 package com.gft.application.file.watcher;
 
-import com.gft.watchservice.PathNode;
+import com.gft.application.file.add.PathUtils;
+import com.gft.watchservice.NotifySubscribers;
+import com.gft.watchservice.OnSubscribeRegisterSubscriber;
+import com.gft.watchservice.PollWatchServicePaths;
+import com.gft.watchservice.RegistersPaths;
 import org.jetbrains.annotations.NotNull;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
 
+import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.nio.file.WatchService;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
 
 public final class PathWatcherTask {
 
-    private final PathWatcherService pathWatcherService;
-    private final SendPathViewObserver pathObserver;
+    private final Observer<Path> pathObserver;
+    private final FileSystem fileSystem;
+    private final PathUtils pathUtils;
+    private final ExecutorService executorService;
 
     public PathWatcherTask(
-        @NotNull final PathWatcherService pathWatcherService,
-        @NotNull final SendPathViewObserver pathObserver
+        @NotNull final Observer<Path> pathObserver,
+        @NotNull final FileSystem fileSystem,
+        @NotNull final PathUtils pathUtils,
+        @NotNull final ExecutorService executorService
     ) {
-        this.pathWatcherService = pathWatcherService;
         this.pathObserver = pathObserver;
+        this.fileSystem = fileSystem;
+        this.pathUtils = pathUtils;
+        this.executorService = executorService;
     }
 
-    public void watchAndSend(Path path) {
-        pathWatcherService.watch(new PathNode(path), pathObserver);
+    public void watch(@NotNull final Path path) throws IOException {
+        WatchService watchService = fileSystem.newWatchService();
+        pathUtils.registerDirectoriesRecursively(path, watchService);
+        CopyOnWriteArraySet<Subscriber<? super Path>> subscribers = new CopyOnWriteArraySet<>();
+
+        executorService.submit(
+            new NotifySubscribers(
+                subscribers,
+                new RegistersPaths(new PollWatchServicePaths(watchService), watchService)
+            )
+        );
+
+        Observable.create(new OnSubscribeRegisterSubscriber(subscribers)).subscribe(pathObserver);
     }
 }

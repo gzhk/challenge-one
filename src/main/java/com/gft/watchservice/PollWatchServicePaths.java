@@ -1,46 +1,34 @@
-package com.gft.watchservice.iterator;
+package com.gft.watchservice;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
-public final class PollsWatchServicePaths implements WatchServiceIterator {
+/**
+ * Polls Path objects from WatchService passed during initialization.
+ */
+public final class PollWatchServicePaths implements WatchServicePaths {
 
     private final WatchService watchService;
-    private final Queue<Path> paths = new LinkedList<>();
 
-    public PollsWatchServicePaths(@NotNull final WatchService watchService) {
+    public PollWatchServicePaths(@NotNull final WatchService watchService) {
         this.watchService = watchService;
-        paths.addAll(pollPaths(watchService));
     }
 
+    @NotNull
     @Override
-    public boolean hasNext() {
-        return !paths.isEmpty();
-    }
-
-    @Override
-    public Path next() {
-        Path remove = paths.remove();
-        paths.addAll(pollPaths(watchService));
-
-        return remove;
-    }
-
-    private static List<Path> pollPaths(final WatchService watchService) {
+    public List<Path> poll() {
         final WatchKey watchKey;
 
-        try {
-            watchKey = watchService.take();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        watchKey = watchService.poll();
+
+        if (watchKey == null) {
+            return new ArrayList<>();
         }
 
         final List<Path> result = new ArrayList<>();
@@ -57,6 +45,8 @@ public final class PollsWatchServicePaths implements WatchServiceIterator {
                     throw new RuntimeException("Could not read root path.", e);
                 }
             });
+
+        watchKey.reset();
 
         return result;
     }
