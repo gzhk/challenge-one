@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import rx.Subscriber;
 
 import java.nio.file.Path;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Notify subscribers about Paths polled from WatchServicePaths.
@@ -12,11 +12,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 public final class NotifySubscribers implements Runnable {
 
-    private final CopyOnWriteArraySet<Subscriber<? super Path>> subscribers;
+    private final CopyOnWriteArrayList<Subscriber<? super Path>> subscribers;
     private final WatchServicePaths watchServicePaths;
 
     public NotifySubscribers(
-        @NotNull final CopyOnWriteArraySet<Subscriber<? super Path>> subscribers,
+        @NotNull final CopyOnWriteArrayList<Subscriber<? super Path>> subscribers,
         @NotNull final WatchServicePaths watchServicePaths
     ) {
         this.subscribers = subscribers;

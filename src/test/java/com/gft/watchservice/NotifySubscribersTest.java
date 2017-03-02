@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +35,7 @@ public final class NotifySubscribersTest {
         TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
         TestSubscriber<Path> testSubscriber2 = new TestSubscriber<>();
 
-        CopyOnWriteArraySet<Subscriber<? super Path>> subscribers = new CopyOnWriteArraySet<>();
+        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
         subscribers.add(testSubscriber);
         subscribers.add(testSubscriber2);
 
@@ -71,7 +72,7 @@ public final class NotifySubscribersTest {
         TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
         testSubscriber.unsubscribe();
 
-        CopyOnWriteArraySet<Subscriber<? super Path>> subscribers = new CopyOnWriteArraySet<>();
+        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
         subscribers.add(testSubscriber);
 
         NotifySubscribers notifySubscribers = new NotifySubscribers(
@@ -102,7 +103,7 @@ public final class NotifySubscribersTest {
     public void reportExceptionToSubscribers() throws Exception {
         TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
 
-        CopyOnWriteArraySet<Subscriber<? super Path>> subscribers = new CopyOnWriteArraySet<>();
+        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
         subscribers.add(testSubscriber);
 
         NotifySubscribers notifySubscribers = new NotifySubscribers(
@@ -122,7 +123,7 @@ public final class NotifySubscribersTest {
         TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
         testSubscriber.unsubscribe();
 
-        CopyOnWriteArraySet<Subscriber<? super Path>> subscribers = new CopyOnWriteArraySet<>();
+        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
         subscribers.add(testSubscriber);
 
         NotifySubscribers notifySubscribers = new NotifySubscribers(

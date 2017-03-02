@@ -6,13 +6,14 @@ import rx.Subscriber;
 import rx.observers.TestSubscriber;
 
 import java.nio.file.Path;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public final class OnSubscribeRegisterSubscriberTest {
 
     @Test
     public void addsSubscriberToTheSet() throws Exception {
-        CopyOnWriteArraySet<Subscriber<? super Path>> subscribers = new CopyOnWriteArraySet<>();
+        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
         OnSubscribeRegisterSubscriber onSubscribeRegisterSubscriber = new OnSubscribeRegisterSubscriber(subscribers);
 
         TestSubscriber<Path> testSubscriber1 = new TestSubscriber<>();

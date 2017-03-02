@@ -26,14 +26,14 @@ public final class AddFileAction {
 
     @GetMapping("/addFile")
     public ResponseEntity<String> invoke(@RequestParam(name = "name") Path path) {
-        path = directory.resolve(path);
+        final Path absoluteFilePath = directory.resolve(path);
 
-        if (pathUtils.exists(path)) {
+        if (pathUtils.exists(absoluteFilePath)) {
             return ResponseEntity.ok("File already exists.");
         }
 
         try {
-            pathUtils.createEmptyFile(path);
+            pathUtils.createEmptyFile(absoluteFilePath);
         } catch (IOException e) {
             return ResponseEntity.ok(e.toString() + "\n" + Arrays.toString(e.getStackTrace()));
         }

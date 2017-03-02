@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.WatchService;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 
@@ -39,7 +40,7 @@ public final class PathWatcherTask {
     public void watch(@NotNull final Path path) throws IOException {
         WatchService watchService = fileSystem.newWatchService();
         pathUtils.registerDirectoriesRecursively(path, watchService);
-        CopyOnWriteArraySet<Subscriber<? super Path>> subscribers = new CopyOnWriteArraySet<>();
+        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
 
         executorService.submit(
             new NotifySubscribers(
