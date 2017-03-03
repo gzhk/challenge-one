@@ -15,7 +15,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.WatchService;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 
 public final class PathWatcherTask {
