@@ -1,9 +1,12 @@
 package com.gft.watchservice;
 
 import org.jetbrains.annotations.NotNull;
+import rx.Observer;
 import rx.Subscriber;
 
 import java.nio.file.Path;
+import java.nio.file.WatchService;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -12,43 +15,37 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public final class NotifySubscribers implements Runnable {
 
+    private final WatchService watchService;
     private final CopyOnWriteArrayList<Subscriber<? super Path>> subscribers;
-    private final WatchServicePaths watchServicePaths;
 
     public NotifySubscribers(
-        @NotNull final CopyOnWriteArrayList<Subscriber<? super Path>> subscribers,
-        @NotNull final WatchServicePaths watchServicePaths
+        @NotNull final WatchService watchService,
+        @NotNull final CopyOnWriteArrayList<Subscriber<? super Path>> subscribers
     ) {
+        this.watchService = watchService;
         this.subscribers = subscribers;
-        this.watchServicePaths = watchServicePaths;
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
-                for (Path path : watchServicePaths.poll()) {
+                List<Path> paths = PollWatchServicePaths.poll(watchService);
+                RegistersPaths.register(paths.stream(), watchService);
+                paths.forEach(path ->
                     subscribers
                         .stream()
-                        .filter(subscriber -> {
-                            if (subscriber.isUnsubscribed()) {
-                                subscribers.remove(subscriber);
-
-                                return false;
-                            }
-
-                            return true;
-                        })
-                        .forEach(subscriber -> subscriber.onNext(path));
-                }
-            } catch (Throwable e) {
-                subscribers
-                    .stream()
-                    .filter(subscriber -> !subscriber.isUnsubscribed())
-                    .forEach(subscriber -> subscriber.onError(e));
-
-                return;
+                        .filter(subscriber -> !subscriber.isUnsubscribed())
+                        .forEach(subscriber -> subscriber.onNext(path))
+                );
+            } catch (CouldNotReadRootPath | CouldNotRegisterPath e) {
+                // We don't want to kill application because of this exceptions
             }
         }
+
+        subscribers
+            .stream()
+            .filter(subscriber -> !subscriber.isUnsubscribed())
+            .forEach(Observer::onCompleted);
     }
 }

@@ -2,27 +2,26 @@ package com.gft.watchservice;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.nio.file.*;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class RegistersPathsTest {
+public final class RegistersPathsTest {
 
     @Test(timeout = 10000)
-    public void registersPathsReturnedByDecoratedIteratorInWatchService() throws Exception {
+    public void registersPathsReturnedByPollWatchServicePaths() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
         Path rootPath = fileSystem.getPath("/root");
         Files.createDirectory(rootPath);
 
-        WatchServicePaths watchServicePaths = () -> Collections.singletonList(rootPath);
         WatchService watchService = fileSystem.newWatchService();
-
-        RegistersPaths registersPaths = new RegistersPaths(watchServicePaths, watchService);
-        List<Path> paths = registersPaths.poll();
+        RegistersPaths.register(Stream.of(rootPath), watchService);
 
         Path subPath = rootPath.resolve("subPath");
         Files.createDirectory(subPath);
@@ -36,6 +35,5 @@ public class RegistersPathsTest {
             .collect(Collectors.toList());
 
         Assertions.assertThat(collect).contains(subPath);
-        Assertions.assertThat(paths).containsOnly(rootPath);
     }
 }

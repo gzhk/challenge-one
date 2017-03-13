@@ -19,7 +19,6 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Paths;
-import java.util.concurrent.Executors;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -56,19 +55,10 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
         return new SendPathViewObserver(pathViewFactory, simpMessagingTemplate, LoggerFactory.getLogger(SendPathViewObserver.class));
     }
 
-    @Bean
-    protected PathWatcherTask pathWatcherTask(
-        @Value("${dir}") String rootPath,
-        SendPathViewObserver observer,
-        PathUtils pathUtils
-    ) throws IOException {
-        PathWatcherTask task = new PathWatcherTask(
-            observer,
-            FileSystems.getDefault(),
-            pathUtils,
-            Executors.newSingleThreadExecutor()
-        );
-        task.watch(Paths.get(rootPath));
+    @Bean(destroyMethod = "close")
+    protected PathWatcherTask pathWatcherTask(@Value("${dir}") String rootPath, SendPathViewObserver observer) throws IOException {
+        PathWatcherTask task = new PathWatcherTask(FileSystems.getDefault());
+        task.watch(Paths.get(rootPath), observer);
 
         return task;
     }

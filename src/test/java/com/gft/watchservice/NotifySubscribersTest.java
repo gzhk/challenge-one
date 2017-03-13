@@ -2,19 +2,14 @@ package com.gft.watchservice;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.assertj.core.api.Assertions;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import rx.Subscriber;
 import rx.observers.TestSubscriber;
 
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.file.*;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.*;
 
 public final class NotifySubscribersTest {
@@ -22,117 +17,64 @@ public final class NotifySubscribersTest {
     @Test
     public void passesPathToAllSubscribers() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        WatchService watchService = fileSystem.newWatchService();
+
+        TestSubscriber<Path> testSubscriber1 = new TestSubscriber<>();
+        TestSubscriber<Path> testSubscriber2 = new TestSubscriber<>();
+
+        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
+        subscribers.add(testSubscriber1);
+        subscribers.add(testSubscriber2);
+
+        NotifySubscribers notifySubscribers = new NotifySubscribers(watchService, subscribers);
+        Executors.newSingleThreadExecutor().submit(notifySubscribers);
 
         Path rootPath = fileSystem.getPath("/root");
         Files.createDirectory(rootPath);
+
+        rootPath.register(
+            watchService,
+            new WatchEvent.Kind[]{StandardWatchEventKinds.ENTRY_CREATE},
+            SensitivityWatchEventModifier.HIGH
+        );
 
         Path subPath = rootPath.resolve("subPath");
         Files.createDirectory(subPath);
 
-        TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
-        TestSubscriber<Path> testSubscriber2 = new TestSubscriber<>();
+        testSubscriber1.awaitValueCount(1, 10, TimeUnit.SECONDS);
+        testSubscriber1.assertReceivedOnNext(Collections.singletonList(subPath));
 
-        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
-        subscribers.add(testSubscriber);
-        subscribers.add(testSubscriber2);
-
-        NotifySubscribers notifySubscribers = new NotifySubscribers(
-            subscribers,
-            new WatchServicePaths() {
-
-                private int pollPathsCalls = 0;
-
-                @NotNull
-                @Override
-                public List<Path> poll() {
-                    return pollPathsCalls++ > 0 ? new ArrayList<>() : Arrays.asList(rootPath, subPath);
-                }
-            }
-        );
-
-        Executors.newSingleThreadExecutor().submit(notifySubscribers);
-
-        testSubscriber.awaitValueCount(2, 10, TimeUnit.SECONDS);
-        testSubscriber.assertReceivedOnNext(Arrays.asList(rootPath, subPath));
-
-        testSubscriber2.awaitValueCount(2, 10, TimeUnit.SECONDS);
-        testSubscriber2.assertReceivedOnNext(Arrays.asList(rootPath, subPath));
+        testSubscriber2.awaitValueCount(1, 10, TimeUnit.SECONDS);
+        testSubscriber2.assertReceivedOnNext(Collections.singletonList(subPath));
     }
 
     @Test
-    public void removesSubscriberFromSetWhenItIsUnSubscribed() throws Exception {
+    public void stopsTaskAfterTheThreadIsInterrupted() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        WatchService watchService = fileSystem.newWatchService();
 
-        Path rootPath = fileSystem.getPath("/root");
-        Files.createDirectory(rootPath);
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<?> future = executorService.submit(new NotifySubscribers(watchService, new CopyOnWriteArrayList<>()));
+        executorService.shutdownNow();
 
-        TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
-        testSubscriber.unsubscribe();
-
-        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
-        subscribers.add(testSubscriber);
-
-        NotifySubscribers notifySubscribers = new NotifySubscribers(
-            subscribers,
-            new WatchServicePaths() {
-
-                private int pollPathsCalls = 0;
-
-                @NotNull
-                @Override
-                public List<Path> poll() {
-                    if (pollPathsCalls++ > 0) {
-                        throw new RuntimeException("break loop");
-                    }
-
-                    return Collections.singletonList(rootPath);
-                }
-            }
-        );
-
-        notifySubscribers.run();
-
-        Assertions.assertThat(subscribers).isEmpty();
-        testSubscriber.assertNoValues();
+        executorService.awaitTermination(1, TimeUnit.SECONDS);
+        Assertions.assertThat(future.isDone()).isEqualTo(true);
     }
 
     @Test
-    public void reportExceptionToSubscribers() throws Exception {
-        TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
+    public void callsOnCompleteAfterTheThreadIsInterrupted() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        WatchService watchService = fileSystem.newWatchService();
 
+        TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
         CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
         subscribers.add(testSubscriber);
 
-        NotifySubscribers notifySubscribers = new NotifySubscribers(
-            subscribers,
-            () -> {
-                throw new NullPointerException();
-            }
-        );
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(new NotifySubscribers(watchService, subscribers));
+        executorService.shutdownNow();
 
-        notifySubscribers.run();
-
-        testSubscriber.assertError(NullPointerException.class);
-    }
-
-    @Test
-    public void doesNotReportErrorIfSubscriberIsUnSubscribed() throws Exception {
-        TestSubscriber<Path> testSubscriber = new TestSubscriber<>();
-        testSubscriber.unsubscribe();
-
-        CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
-        subscribers.add(testSubscriber);
-
-        NotifySubscribers notifySubscribers = new NotifySubscribers(
-            subscribers,
-            () -> {
-                throw new NullPointerException();
-            }
-        );
-
-        notifySubscribers.run();
-
-        testSubscriber.assertNoValues();
-        testSubscriber.assertNoErrors();
+        executorService.awaitTermination(1, TimeUnit.SECONDS);
+        testSubscriber.assertCompleted();
     }
 }

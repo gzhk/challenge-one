@@ -4,26 +4,19 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 /**
- * Polls Path objects from WatchService passed during initialization.
+ * Polls Path objects from WatchService.
  */
-public final class PollWatchServicePaths implements WatchServicePaths {
-
-    private final WatchService watchService;
-
-    public PollWatchServicePaths(@NotNull final WatchService watchService) {
-        this.watchService = watchService;
-    }
+public final class PollWatchServicePaths {
 
     @NotNull
-    @Override
-    public List<Path> poll() {
+    public static List<Path> poll(@NotNull final WatchService watchService) {
         final WatchKey watchKey;
 
         watchKey = watchService.poll();
@@ -32,27 +25,21 @@ public final class PollWatchServicePaths implements WatchServicePaths {
             return Collections.emptyList();
         }
 
-        final List<Path> result = new ArrayList<>();
-
-        watchKey.pollEvents()
-            .stream()
-            .filter(watchEvent -> watchEvent.kind() != OVERFLOW)
-            .map(watchEvent -> ((WatchEvent<Path>) watchEvent).context())
-            .map(path -> ((Path) watchKey.watchable()).resolve(path))
-//            .flatMap(path -> { // TODO
-//                try {
-//                    return Files.walk(path);
-//                } catch (IOException e) {
-//                    throw new RuntimeException("Could not read root path.", e);
-//                }
-//            });
-            .forEach(path -> {
-                try {
-                    Files.walk(path).forEach(result::add);
-                } catch (IOException e) {
-                    throw new RuntimeException("Could not read root path.", e);
-                }
-            });
+        List<Path> result =
+            watchKey
+                .pollEvents()
+                .stream()
+                .filter(watchEvent -> watchEvent.kind() != OVERFLOW)
+                .map(watchEvent -> ((WatchEvent<Path>) watchEvent).context())
+                .map(path -> ((Path) watchKey.watchable()).resolve(path))
+                .flatMap(path -> {
+                    try {
+                        return Files.walk(path);
+                    } catch (IOException e) {
+                        throw new CouldNotReadRootPath("Could not read root path: " + path + ".", e);
+                    }
+                })
+                .collect(Collectors.toList());
 
         watchKey.reset();
 

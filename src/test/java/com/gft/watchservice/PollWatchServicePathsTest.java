@@ -15,7 +15,7 @@ import java.util.List;
 public final class PollWatchServicePathsTest {
 
     @Test(timeout = 10000)
-    public void returnsPolledPaths() throws Exception {
+    public void returnsStreamWithPolledPaths() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
         WatchService watchService = fileSystem.newWatchService();
 
@@ -23,7 +23,6 @@ public final class PollWatchServicePathsTest {
         Files.createDirectory(rootPath);
         rootPath.register(watchService, new WatchEvent.Kind[]{StandardWatchEventKinds.ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
 
-        PollWatchServicePaths pollWatchServicePaths = new PollWatchServicePaths(watchService);
 
         Path multiLevelPath = rootPath.resolve("level1/level2/level3");
         Files.createDirectories(multiLevelPath);
@@ -34,7 +33,7 @@ public final class PollWatchServicePathsTest {
         final List<Path> returned = new ArrayList<>();
 
         while (returned.size() < 4) {
-            returned.addAll(pollWatchServicePaths.poll());
+            returned.addAll(PollWatchServicePaths.poll(watchService));
         }
 
         Assertions
@@ -48,7 +47,7 @@ public final class PollWatchServicePathsTest {
     }
 
     @Test
-    public void returnsEmptyListIfThereAreNoPaths() throws Exception {
+    public void returnsEmptyStreamIfThereAreNoPaths() throws Exception {
         FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
         WatchService watchService = fileSystem.newWatchService();
 
@@ -56,8 +55,6 @@ public final class PollWatchServicePathsTest {
         Files.createDirectory(rootPath);
         rootPath.register(watchService, new WatchEvent.Kind[]{StandardWatchEventKinds.ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
 
-        PollWatchServicePaths pollWatchServicePaths = new PollWatchServicePaths(watchService);
-
-        Assertions.assertThat(pollWatchServicePaths.poll()).isEmpty();
+        Assertions.assertThat(PollWatchServicePaths.poll(watchService)).isEmpty();
     }
 }
