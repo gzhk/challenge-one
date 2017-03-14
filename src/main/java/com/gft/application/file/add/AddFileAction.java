@@ -16,24 +16,24 @@ import java.util.Arrays;
 public final class AddFileAction {
 
     private final Path directory;
-    private final PathUtils pathUtils;
+    private final AddFileService addFileService;
 
     @Autowired
-    public AddFileAction(@Value("${dir}") final Path directory, @NotNull final PathUtils pathUtils) {
+    public AddFileAction(@Value("${dir}") final Path directory, @NotNull final AddFileService addFileService) {
         this.directory = directory;
-        this.pathUtils = pathUtils;
+        this.addFileService = addFileService;
     }
 
     @GetMapping("/addFile")
     public ResponseEntity<String> invoke(@RequestParam(name = "name") Path path) {
         final Path absoluteFilePath = directory.resolve(path);
 
-        if (pathUtils.exists(absoluteFilePath)) {
+        if (addFileService.exists(absoluteFilePath)) {
             return ResponseEntity.ok("File already exists.");
         }
 
         try {
-            pathUtils.createEmptyFile(absoluteFilePath);
+            addFileService.createEmptyFile(absoluteFilePath);
         } catch (IOException e) {
             return ResponseEntity.ok(e.toString() + "\n" + Arrays.toString(e.getStackTrace()));
         }

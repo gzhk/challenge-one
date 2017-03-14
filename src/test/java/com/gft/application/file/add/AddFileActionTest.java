@@ -33,7 +33,7 @@ public final class AddFileActionTest {
         Path file = directory.resolve("file.txt");
         Files.write(file, Collections.singletonList(""), Charset.forName("UTF-8"));
 
-        AddFileAction addFileAction = new AddFileAction(directory, new PathUtils());
+        AddFileAction addFileAction = new AddFileAction(directory, new AddFileService());
 
         ResponseEntity<String> responseEntity = addFileAction.invoke(file);
 
@@ -48,7 +48,7 @@ public final class AddFileActionTest {
         Path directory = fileSystem.getPath("/tmp");
         Files.createDirectory(directory);
 
-        AddFileAction addFileAction = new AddFileAction(directory, new PathUtils());
+        AddFileAction addFileAction = new AddFileAction(directory, new AddFileService());
         ResponseEntity<String> responseEntity = addFileAction.invoke(directory.resolve("file.txt"));
 
         assertThat(responseEntity.getStatusCode(), is(HttpStatus.OK));
@@ -63,11 +63,11 @@ public final class AddFileActionTest {
         Path directory = fileSystem.getPath("/tmp");
         Files.createDirectory(directory);
 
-        PathUtils pathUtils = mock(PathUtils.class);
-        AddFileAction addFileAction = new AddFileAction(directory, pathUtils);
+        AddFileService addFileService = mock(AddFileService.class);
+        AddFileAction addFileAction = new AddFileAction(directory, addFileService);
         Path path = directory.resolve("file.txt");
         IOException ioException = new IOException("Exception message");
-        doThrow(ioException).when(pathUtils).createEmptyFile(any());
+        doThrow(ioException).when(addFileService).createEmptyFile(any());
 
         ResponseEntity<String> responseEntity = addFileAction.invoke(path);
 

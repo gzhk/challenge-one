@@ -1,6 +1,6 @@
 package com.gft.application.config;
 
-import com.gft.application.file.add.PathUtils;
+import com.gft.application.file.add.AddFileService;
 import com.gft.application.file.model.PathViewFactory;
 import com.gft.application.file.watcher.PathWatcherTask;
 import com.gft.application.file.watcher.SendPathViewObserver;
@@ -61,10 +61,5 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
         task.watch(Paths.get(rootPath), observer);
 
         return task;
-    }
-
-    @Bean
-    public PathUtils pathUtils() {
-        return new PathUtils();
     }
 }

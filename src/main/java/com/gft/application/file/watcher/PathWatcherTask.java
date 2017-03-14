@@ -35,11 +35,11 @@ public final class PathWatcherTask implements AutoCloseable {
         watchServices.add(watchService);
         RegistersPaths.register(Files.walk(path), watchService);
         CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
-        executorService.submit(new NotifySubscribers(watchService, subscribers));
         Observable
             .create(new OnSubscribeRegisterSubscriber(subscribers))
             .doOnUnsubscribe(() -> subscribers.removeIf(Subscriber::isUnsubscribed))
             .subscribe(pathObserver);
+        executorService.submit(new NotifySubscribers(watchService, subscribers));
     }
 
     public void close() throws Exception {

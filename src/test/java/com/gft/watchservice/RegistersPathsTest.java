@@ -5,6 +5,7 @@ import com.google.common.jimfs.Jimfs;
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.nio.file.*;
 import java.util.Arrays;

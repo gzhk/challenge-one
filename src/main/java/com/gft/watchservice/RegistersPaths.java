@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -13,10 +12,7 @@ import java.util.stream.Stream;
  */
 public final class RegistersPaths {
 
-    public static void register(
-        @NotNull final Stream<Path> paths,
-        @NotNull final WatchService watchService
-    ) {
+    public static void register(@NotNull final Stream<Path> paths, @NotNull final WatchService watchService) {
         paths
             .filter(path -> Files.isDirectory(path))
             .forEach(path -> {
