@@ -14,7 +14,7 @@ public class NodePayloadObservableFactory {
 
     /**
      * @param rootNode Root node of tree structure.
-     * @param <T> Type of the node payload.
+     * @param <T>      Type of the node payload.
      * @return ConnectableObservable witch emits children from tree structure for given root node.
      */
     public <T> ConnectableObservable<T> create(@NotNull final Node<T> rootNode) {

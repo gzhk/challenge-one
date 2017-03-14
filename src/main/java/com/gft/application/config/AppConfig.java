@@ -1,6 +1,5 @@
 package com.gft.application.config;
 
-import com.gft.application.file.add.AddFileService;
 import com.gft.application.file.model.PathViewFactory;
 import com.gft.application.file.watcher.PathWatcherTask;
 import com.gft.application.file.watcher.SendPathViewObserver;

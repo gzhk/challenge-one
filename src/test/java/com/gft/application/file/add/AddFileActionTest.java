@@ -37,7 +37,7 @@ public final class AddFileActionTest {
 
         ResponseEntity<String> responseEntity = addFileAction.invoke(file);
 
-        assertThat(responseEntity.getStatusCode(), is(HttpStatus.OK));
+        assertThat(responseEntity.getStatusCode(), is(HttpStatus.CONFLICT));
         assertThat(responseEntity.getBody(), is("File already exists."));
     }
 
@@ -71,7 +71,7 @@ public final class AddFileActionTest {
 
         ResponseEntity<String> responseEntity = addFileAction.invoke(path);
 
-        assertThat(responseEntity.getStatusCode(), is(HttpStatus.OK));
+        assertThat(responseEntity.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         assertThat(responseEntity.getBody(), containsString("Exception message"));
     }
 }

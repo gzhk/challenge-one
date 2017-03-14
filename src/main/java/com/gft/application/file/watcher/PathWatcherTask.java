@@ -44,7 +44,10 @@ public final class PathWatcherTask implements AutoCloseable {
 
     public void close() throws Exception {
         executorService.shutdownNow();
+        closeWatchServices();
+    }
 
+    private void closeWatchServices() throws IOException {
         ArrayList<WatchService> watchServices = new ArrayList<>(this.watchServices);
         this.watchServices.clear();
         for (WatchService watchService : watchServices) {

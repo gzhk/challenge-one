@@ -3,6 +3,7 @@ package com.gft.application.file.add;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,13 +30,13 @@ public final class AddFileAction {
         final Path absoluteFilePath = directory.resolve(path);
 
         if (addFileService.exists(absoluteFilePath)) {
-            return ResponseEntity.ok("File already exists.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("File already exists.");
         }
 
         try {
             addFileService.createEmptyFile(absoluteFilePath);
         } catch (IOException e) {
-            return ResponseEntity.ok(e.toString() + "\n" + Arrays.toString(e.getStackTrace()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.toString() + "\n" + Arrays.toString(e.getStackTrace()));
         }
 
         return ResponseEntity.ok("File created.");
