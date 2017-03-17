@@ -2,7 +2,7 @@ package com.gft.application.file.watcher;
 
 import com.gft.watchservice.NotifySubscribers;
 import com.gft.watchservice.OnSubscribeRegisterSubscriber;
-import com.gft.watchservice.RegistersPaths;
+import com.gft.watchservice.WatchServiceFunctions;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import rx.Observer;
@@ -33,7 +33,7 @@ public final class PathWatcherTask implements AutoCloseable {
     public void watch(@NotNull final Path path, @NotNull final Observer<Path> pathObserver) throws IOException {
         WatchService watchService = fileSystem.newWatchService();
         watchServices.add(watchService);
-        RegistersPaths.register(Files.walk(path), watchService);
+        WatchServiceFunctions.registerPaths(Files.walk(path), watchService);
         CopyOnWriteArrayList<Subscriber<? super Path>> subscribers = new CopyOnWriteArrayList<>();
         Observable
             .create(new OnSubscribeRegisterSubscriber(subscribers))

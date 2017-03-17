@@ -30,8 +30,8 @@ public final class NotifySubscribers implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                List<Path> paths = PollWatchServicePaths.poll(watchService);
-                RegistersPaths.register(paths.stream(), watchService);
+                List<Path> paths = WatchServiceFunctions.pollPaths(watchService);
+                WatchServiceFunctions.registerPaths(paths.stream(), watchService);
                 paths.forEach(path ->
                     subscribers
                         .stream()

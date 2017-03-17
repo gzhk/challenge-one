@@ -11,8 +11,33 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public final class PollWatchServicePathsTest {
+public final class WatchServiceFunctionsTest {
+
+    @Test(timeout = 10000)
+    public void registersPathsReturnedByPollWatchServicePaths() throws Exception {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        Path rootPath = fileSystem.getPath("/root");
+        Files.createDirectory(rootPath);
+
+        WatchService watchService = fileSystem.newWatchService();
+        WatchServiceFunctions.registerPaths(Stream.of(rootPath), watchService);
+
+        Path subPath = rootPath.resolve("subPath");
+        Files.createDirectory(subPath);
+
+        WatchKey watchKey = watchService.take();
+        List<Path> collect = watchKey
+            .pollEvents()
+            .stream()
+            .map(watchEvent -> ((WatchEvent<Path>) watchEvent).context())
+            .map(p -> ((Path) watchKey.watchable()).resolve(p))
+            .collect(Collectors.toList());
+
+        Assertions.assertThat(collect).contains(subPath);
+    }
 
     @Test(timeout = 10000)
     public void returnsStreamWithPolledPaths() throws Exception {
@@ -33,7 +58,7 @@ public final class PollWatchServicePathsTest {
         final List<Path> returned = new ArrayList<>();
 
         while (returned.size() < 4) {
-            returned.addAll(PollWatchServicePaths.poll(watchService));
+            returned.addAll(WatchServiceFunctions.pollPaths(watchService));
         }
 
         Assertions
@@ -55,6 +80,6 @@ public final class PollWatchServicePathsTest {
         Files.createDirectory(rootPath);
         rootPath.register(watchService, new WatchEvent.Kind[]{StandardWatchEventKinds.ENTRY_CREATE}, SensitivityWatchEventModifier.HIGH);
 
-        Assertions.assertThat(PollWatchServicePaths.poll(watchService)).isEmpty();
+        Assertions.assertThat(WatchServiceFunctions.pollPaths(watchService)).isEmpty();
     }
 }

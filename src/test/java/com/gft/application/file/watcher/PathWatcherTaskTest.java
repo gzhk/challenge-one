@@ -2,7 +2,6 @@ package com.gft.application.file.watcher;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
-import javafx.beans.binding.When;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.mockito.Mockito;

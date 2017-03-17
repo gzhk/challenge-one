@@ -7,7 +7,6 @@ import rx.observers.TestSubscriber;
 
 import java.nio.file.Path;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public final class OnSubscribeRegisterSubscriberTest {
 
