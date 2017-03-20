@@ -6,6 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.UUID;
+
 @Controller
 public final class ListAction {
 
@@ -19,6 +21,7 @@ public final class ListAction {
     @GetMapping("/list")
     public String invoke(Model model) {
         model.addAttribute("dir", dir);
+        model.addAttribute("token", UUID.randomUUID().toString());
 
         return "file/list";
     }

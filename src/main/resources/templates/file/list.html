@@ -26,6 +26,7 @@
         var socket = new SockJS('/websocket');
         var stompClient = Stomp.over(socket);
         var dir = [[${dir}]];
+        var token = [[${token}]];
         var $row = $("#path-three");
         var $awaitingNodes = $('#awaiting-nodes');
 
@@ -44,32 +45,36 @@
             });
         };
 
-        stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
+        var handleData = function (data) {
+            var pathNode = JSON.parse(data.body);
+            var $parent = $('#' + pathNode.parentId);
 
-            stompClient.subscribe('/topic/new-path', function (greeting) {
-                var pathNode = JSON.parse(greeting.body);
-                var $parent = $('#' + pathNode.parentId);
+            if (pathNode.name == dir) {
+                $row.append(template(pathNode));
 
-                if (pathNode.name == dir) {
-                    $row.append(template(pathNode));
+                return;
+            }
 
-                    return;
-                }
-
-                if ($parent.length == 1) {
-                    $parent.append(template(pathNode));
-                    appendAwaitingNodes();
-
-                    return;
-                }
-
-                $awaitingNodes.append(template(pathNode));
-
+            if ($parent.length == 1) {
+                $parent.append(template(pathNode));
                 appendAwaitingNodes();
-            });
 
-            stompClient.send("/app/current-paths", {}, {});
+                return;
+            }
+
+            $awaitingNodes.append(template(pathNode));
+
+            appendAwaitingNodes();
+        };
+
+        stompClient.connect({}, function () {
+            stompClient.subscribe('/topic/current-paths', function (data) {
+                if (data.headers['token'] == token) {
+                    handleData(data);
+                }
+            });
+            stompClient.send("/app/current-paths", {'token': token}, {});
+            stompClient.subscribe('/topic/new-path', handleData);
         });
     });
 </script>

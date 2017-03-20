@@ -1,21 +1,19 @@
-package com.gft.application.file.watcher;
+package com.gft.application.file.list;
 
 import com.gft.application.file.model.PathViewFactory;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import rx.Observer;
 
-import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.UUID;
 
-public class SendPathViewObserver implements Observer<Path> {
+public final class SendCurrentPathsObserverFactory {
 
     private final PathViewFactory pathViewFactory;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final Logger logger;
 
-    public SendPathViewObserver(
+    public SendCurrentPathsObserverFactory(
         @NotNull final PathViewFactory pathViewFactory,
         @NotNull final SimpMessagingTemplate simpMessagingTemplate,
         @NotNull final Logger logger
@@ -25,19 +23,8 @@ public class SendPathViewObserver implements Observer<Path> {
         this.logger = logger;
     }
 
-    @Override
-    public void onCompleted() {
-        // do nothing
-    }
-
-    @Override
-    public void onError(final Throwable e) {
-        logger.error(e.getMessage());
-        logger.error(Arrays.toString(e.getStackTrace()));
-    }
-
-    @Override
-    public void onNext(final Path path) {
-        simpMessagingTemplate.convertAndSend("/topic/new-path", pathViewFactory.createFrom(path));
+    @NotNull
+    public SendCurrentPathsObserver create(@NotNull final UUID uuid) {
+        return new SendCurrentPathsObserver(uuid, pathViewFactory, simpMessagingTemplate, logger);
     }
 }

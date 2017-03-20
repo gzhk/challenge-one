@@ -1,8 +1,10 @@
 package com.gft.application.config;
 
+import com.gft.application.file.list.SendCurrentPathsObserver;
+import com.gft.application.file.list.SendCurrentPathsObserverFactory;
 import com.gft.application.file.model.PathViewFactory;
 import com.gft.application.file.watcher.PathWatcherTask;
-import com.gft.application.file.watcher.SendPathViewObserver;
+import com.gft.application.file.watcher.SendNewPathsObserver;
 import com.gft.node.NodePayloadIterableFactory;
 import com.gft.node.NodePayloadObservableFactory;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -50,15 +53,32 @@ public class AppConfig extends AbstractWebSocketMessageBrokerConfigurer {
     }
 
     @Bean
-    public SendPathViewObserver sendPathViewObserver(PathViewFactory pathViewFactory, SimpMessagingTemplate simpMessagingTemplate) {
-        return new SendPathViewObserver(pathViewFactory, simpMessagingTemplate, LoggerFactory.getLogger(SendPathViewObserver.class));
+    public SendNewPathsObserver sendNewPathsObserver(PathViewFactory pathViewFactory, SimpMessagingTemplate simpMessagingTemplate) {
+        return new SendNewPathsObserver(pathViewFactory, simpMessagingTemplate, LoggerFactory.getLogger(SendNewPathsObserver.class));
+    }
+
+    @Bean
+    public SendCurrentPathsObserver sendCurrentPathsObserver(PathViewFactory pathViewFactory, SimpMessagingTemplate simpMessagingTemplate) {
+        return new SendCurrentPathsObserver(UUID.randomUUID(), pathViewFactory, simpMessagingTemplate, LoggerFactory.getLogger(SendNewPathsObserver.class));
     }
 
     @Bean(destroyMethod = "close")
-    protected PathWatcherTask pathWatcherTask(@Value("${dir}") String rootPath, SendPathViewObserver observer) throws IOException {
+    protected PathWatcherTask pathWatcherTask(@Value("${dir}") String rootPath, SendNewPathsObserver observer) throws IOException {
         PathWatcherTask task = new PathWatcherTask(FileSystems.getDefault());
         task.watch(Paths.get(rootPath), observer);
 
         return task;
+    }
+
+    @Bean
+    public SendCurrentPathsObserverFactory sendCurrentPathsObserverFactory(
+        PathViewFactory pathViewFactory,
+        SimpMessagingTemplate simpMessagingTemplate
+    ) {
+        return new SendCurrentPathsObserverFactory(
+            pathViewFactory,
+            simpMessagingTemplate,
+            LoggerFactory.getLogger(SendCurrentPathsObserverFactory.class)
+        );
     }
 }
